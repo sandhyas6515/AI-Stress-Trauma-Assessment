@@ -21,6 +21,147 @@ const upload = multer({
   limits: { fileSize: 40 * 1024 * 1024 } // 40MB
 });
 
+// Root endpoint serving clean API Dashboard
+app.get('/', (req, res) => {
+  if (req.headers.accept && req.headers.accept.includes('application/json')) {
+    return res.json({
+      status: 'online',
+      service: 'NHAA AI Real-Time Stress & Trauma Assessment Gateway',
+      authority: 'Ministry of Social Justice and Empowerment, Government of India',
+      frontendUrl: 'http://localhost:5173',
+      endpoints: {
+        health: '/api/health',
+        complaints: '/api/complaints',
+        analytics: '/api/analytics',
+        voiceProcess: '/api/voice/process',
+        demoSamples: '/api/demo-samples'
+      },
+      timestamp: new Date().toISOString()
+    });
+  }
+
+  res.send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>NHAA Backend API Gateway | Government of India</title>
+      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+      <style>
+        body {
+          font-family: 'Plus Jakarta Sans', sans-serif;
+          background: #0c1322;
+          color: #f8fafc;
+          margin: 0;
+          padding: 40px 20px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          min-height: 100vh;
+          box-sizing: border-box;
+        }
+        .card {
+          background: #131c2e;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 16px;
+          padding: 36px;
+          max-width: 620px;
+          width: 100%;
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        .badge {
+          display: inline-block;
+          background: rgba(16, 185, 129, 0.15);
+          color: #34d399;
+          border: 1px solid rgba(16, 185, 129, 0.4);
+          padding: 4px 12px;
+          border-radius: 999px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          margin-bottom: 12px;
+        }
+        h1 { margin: 0 0 8px 0; font-size: 1.5rem; font-weight: 800; color: #ffffff; }
+        p { color: #94a3b8; font-size: 0.9rem; line-height: 1.5; margin: 0 0 24px 0; }
+        .btn-frontend {
+          display: inline-block;
+          background: #4c7bf4;
+          color: #ffffff;
+          text-decoration: none;
+          padding: 12px 24px;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 0.95rem;
+          margin-bottom: 28px;
+          transition: background 0.2s;
+        }
+        .btn-frontend:hover { background: #3b68e5; }
+        .endpoints-box {
+          background: #0c1322;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 10px;
+          padding: 16px;
+          margin-top: 10px;
+        }
+        .endpoints-title {
+          font-size: 0.75rem;
+          color: #64748b;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          margin-bottom: 10px;
+        }
+        .endpoint-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+          font-size: 0.84rem;
+        }
+        .endpoint-row:last-child { border-bottom: none; }
+        .endpoint-row a { color: #60a5fa; text-decoration: none; font-weight: 600; }
+        .endpoint-row a:hover { text-decoration: underline; }
+        .method { color: #34d399; font-weight: 700; }
+      </style>
+    </head>
+    <body>
+      <div class="card">
+        <span class="badge">● BACKEND API SERVICE ONLINE (PORT 5000)</span>
+        <h1>NHAA Trauma AI Gateway</h1>
+        <p>Ministry of Social Justice and Empowerment, Government of India<br>
+        Public Grievance Redressal & Trauma Assessment Engine.</p>
+
+        <a href="http://localhost:5173" class="btn-frontend">Open Web Application (Port 5173) →</a>
+
+        <div class="endpoints-box">
+          <div class="endpoints-title">Active REST API Endpoints:</div>
+          <div class="endpoint-row">
+            <span class="method">GET</span>
+            <a href="/api/health">/api/health (System Health Check)</a>
+          </div>
+          <div class="endpoint-row">
+            <span class="method">GET</span>
+            <a href="/api/complaints">/api/complaints (Complaints Queue)</a>
+          </div>
+          <div class="endpoint-row">
+            <span class="method">GET</span>
+            <a href="/api/analytics">/api/analytics (Triage Intelligence)</a>
+          </div>
+          <div class="endpoint-row">
+            <span class="method">GET</span>
+            <a href="/api/demo-samples">/api/demo-samples (Standard Scenarios)</a>
+          </div>
+          <div class="endpoint-row">
+            <span class="method">POST</span>
+            <span style="color: #94a3b8;">/api/voice/process (AI Acoustic & NLP Engine)</span>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `);
+});
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({
