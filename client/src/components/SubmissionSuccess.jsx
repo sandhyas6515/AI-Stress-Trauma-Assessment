@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import QRCode from 'qrcode';
-import { CheckCircle2, Download, Copy, ExternalLink, PhoneCall, ShieldAlert, HeartHandshake, Scale, Ambulance, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Download, Copy, ExternalLink, PhoneCall, ShieldAlert, HeartHandshake, Scale, Ambulance, ArrowRight, ShieldCheck } from 'lucide-react';
 
 export default function SubmissionSuccess({ complaint, onGoToTracker }) {
   const [copied, setCopied] = useState(false);
@@ -24,28 +24,28 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
       const qrData = `https://nhaa.gov.in/track?ticket=${ticketId}`;
       const qrDataUrl = await QRCode.toDataURL(qrData, { margin: 1, width: 120 });
 
-      // Official Header Band
-      doc.setFillColor(11, 19, 43);
+      // Official Header Band (Gov Navy)
+      doc.setFillColor(15, 23, 42);
       doc.rect(0, 0, 210, 36, 'F');
 
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(14);
-      doc.text('NATIONAL HELPLINE / APPLICATION FOR ATROCITIES (NHAA)', 14, 15);
+      doc.setFontSize(13);
+      doc.text('NATIONAL HELPLINE / APPLICATION FOR ATROCITIES (NHAA)', 14, 14);
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.text('Government of India — Ministry of Social Justice & Empowerment', 14, 23);
-      doc.text('AI-Based Trauma & Distress Triage Module | SIH 2026 (PS: 26093)', 14, 30);
+      doc.text('Ministry of Social Justice & Empowerment, Government of India', 14, 22);
+      doc.text('Real-Time Voice Trauma Assessment & Statutory Grievance Redressal', 14, 29);
 
       // QR Code in Header
       doc.addImage(qrDataUrl, 'PNG', 165, 3, 30, 30);
 
       // Ticket ID & Stamp
-      doc.setTextColor(17, 24, 39);
+      doc.setTextColor(15, 23, 42);
       doc.setFontSize(13);
       doc.setFont('helvetica', 'bold');
-      doc.text(`OFFICIAL COMPLAINT ACKNOWLEDGMENT RECEIPT`, 14, 48);
+      doc.text(`OFFICIAL COMPLAINT ACKNOWLEDGMENT DOCKET`, 14, 48);
 
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
@@ -58,7 +58,7 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
       doc.text(`STATUS: ${complaint.status || 'Submitted (Queued for Priority Triage)'}`, 14, 70);
 
       // Risk Triage Badge
-      doc.setFillColor(isCritical ? 239 : 14, isCritical ? 68 : 165, isCritical ? 68 : 233);
+      doc.setFillColor(isCritical ? 225 : 37, isCritical ? 29 : 99, isCritical ? 72 : 235);
       doc.roundedRect(135, 50, 60, 18, 2, 2, 'F');
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
@@ -113,7 +113,7 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
       doc.line(14, 166, 196, 166);
       doc.setFontSize(11);
       doc.setFont('helvetica', 'bold');
-      doc.text('4. Auto-Generated Executive Summary', 14, 173);
+      doc.text('4. Official Executive Summary', 14, 173);
 
       doc.setFontSize(9);
       doc.setFont('helvetica', 'normal');
@@ -131,19 +131,19 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
       const ySupport = yTranscript + 8 + (splitTranscript.length * 5);
       doc.line(14, ySupport, 196, ySupport);
       doc.setFont('helvetica', 'bold');
-      doc.text('5. AI Recommended Support & Emergency Directives', 14, ySupport + 7);
+      doc.text('5. AI Recommended Support & Directives', 14, ySupport + 7);
       doc.setFont('helvetica', 'normal');
 
       let currentY = ySupport + 13;
       (risk.recommendedSupport || []).forEach((sup) => {
-        doc.text(`• ${sup.type}: ${sup.description} (Helpline: ${sup.contact})`, 16, currentY);
+        doc.text(`• ${sup.type}: ${sup.description} (Contact: ${sup.contact})`, 16, currentY);
         currentY += 6;
       });
 
       // Footer
       doc.setFontSize(8);
       doc.setTextColor(100, 116, 139);
-      doc.text('This is a computer-generated digital legal receipt under the NHAA Automated Grievance Redressal Architecture.', 14, 285);
+      doc.text('This is a computer-generated digital legal receipt under the NHAA Automated Grievance Architecture.', 14, 285);
       doc.text(`Official Verification URL: ${qrData}`, 14, 290);
 
       doc.save(`NHAA_Complaint_Receipt_${ticketId}.pdf`);
@@ -156,34 +156,35 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '850px', margin: '0 auto' }}>
+    <div className="animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto' }}>
+      
       {/* Top Confirmation Card */}
-      <div className="glass-card" style={{ padding: '36px', textAlign: 'center', marginBottom: '24px', position: 'relative' }}>
-        <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.4)', marginBottom: '16px' }}>
-          <CheckCircle2 size={46} color="#10b981" />
+      <div className="glass-card" style={{ padding: '40px 32px', textAlign: 'center', marginBottom: '24px' }}>
+        <div style={{ display: 'inline-flex', padding: '16px', borderRadius: '50%', background: 'var(--risk-low-bg)', border: '1px solid var(--risk-low-border)', marginBottom: '16px' }}>
+          <CheckCircle2 size={44} color="var(--risk-low-solid)" />
         </div>
 
-        <h1 style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '8px' }}>
-          Complaint Successfully Registered
+        <h1 style={{ fontSize: '1.85rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '8px' }}>
+          Grievance Docket Successfully Registered
         </h1>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', maxWidth: '560px', margin: '0 auto 20px auto' }}>
-          Your spoken testimony has been transcribed, analyzed, and queued in the NHAA Nodal Command Center.
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.94rem', maxWidth: '600px', margin: '0 auto 24px auto' }}>
+          Your spoken testimony has been officially registered, trauma-triaged, and routed to the Jurisdictional Atrocity Cell.
         </p>
 
         {/* Big Ticket ID Box */}
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '14px', background: 'rgba(0, 0, 0, 0.45)', padding: '14px 24px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glow)', marginBottom: '24px' }}>
-          <div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '16px', background: 'var(--bg-surface)', padding: '16px 28px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glass)', marginBottom: '28px' }}>
+          <div style={{ textAlign: 'left' }}>
+            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: '700' }}>
               Your Trackable Ticket ID
             </div>
-            <div style={{ fontSize: '1.6rem', fontWeight: '800', color: 'var(--accent-cyan)', letterSpacing: '0.05em' }}>
+            <div style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--primary-blue)', letterSpacing: '0.04em' }}>
               {ticketId}
             </div>
           </div>
           <button
             onClick={handleCopyTicket}
             className="btn-secondary"
-            style={{ padding: '8px 12px', fontSize: '0.8rem' }}
+            style={{ padding: '8px 14px', fontSize: '0.82rem' }}
           >
             <Copy size={15} />
             {copied ? 'Copied!' : 'Copy'}
@@ -197,16 +198,16 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
             onClick={handleDownloadPdf}
             className="btn-primary"
             disabled={isGeneratingPdf}
-            style={{ padding: '12px 24px' }}
+            style={{ padding: '12px 26px', fontSize: '0.96rem' }}
           >
             <Download size={18} />
-            {isGeneratingPdf ? 'Generating PDF...' : 'Download FIR-Ready Report (PDF)'}
+            {isGeneratingPdf ? 'Generating PDF...' : 'Download Official FIR-Ready Report (PDF)'}
           </button>
 
           <button
             onClick={() => onGoToTracker(ticketId)}
             className="btn-secondary"
-            style={{ padding: '12px 24px' }}
+            style={{ padding: '12px 26px', fontSize: '0.96rem' }}
           >
             <span>Track Status in Real-Time</span>
             <ArrowRight size={18} />
@@ -216,32 +217,32 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
 
       {/* Critical Emergency Banner if High or Critical Risk */}
       {isCritical && (
-        <div className="glass-card critical-pulse-box" style={{ padding: '20px', marginBottom: '24px', background: 'rgba(239, 68, 68, 0.1)', borderColor: 'var(--risk-critical-border)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
-            <ShieldAlert size={26} color="var(--risk-critical-text)" />
+        <div className="glass-card critical-pulse-box" style={{ padding: '22px 26px', marginBottom: '24px', background: 'var(--risk-critical-bg)', borderColor: 'var(--risk-critical-border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '12px' }}>
+            <ShieldAlert size={28} color="var(--risk-critical-solid)" />
             <div>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--risk-critical-text)' }}>
+              <h3 style={{ fontSize: '1.15rem', fontWeight: '800', color: 'var(--risk-critical-text)' }}>
                 Immediate Emergency Assistance Activated
               </h3>
-              <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
-                Our AI identified acute distress or life threat indicators. The nearest PCR unit and Nodal Atrocity Cell have been notified.
+              <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)' }}>
+                Our AI identified acute distress or life threat indicators. The nearest PCR patrol unit and District Atrocity Cell have been alerted.
               </p>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '12px' }}>
+          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '14px' }}>
             <a href="tel:112" style={{ textDecoration: 'none' }}>
-              <button className="btn-danger" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                <PhoneCall size={15} /> Dial 112 (Police Emergency)
+              <button className="btn-danger" style={{ padding: '9px 18px', fontSize: '0.88rem' }}>
+                <PhoneCall size={16} /> Dial 112 (Police Emergency)
               </button>
             </a>
             <a href="tel:14566" style={{ textDecoration: 'none' }}>
-              <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                <PhoneCall size={15} /> Dial 14566 (National Atrocity Helpline)
+              <button className="btn-secondary" style={{ padding: '9px 18px', fontSize: '0.88rem' }}>
+                <PhoneCall size={16} /> Dial 14566 (National SC/ST Helpline)
               </button>
             </a>
             <a href="tel:108" style={{ textDecoration: 'none' }}>
-              <button className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
-                <Ambulance size={15} /> Dial 108 (Medical Emergency)
+              <button className="btn-secondary" style={{ padding: '9px 18px', fontSize: '0.88rem' }}>
+                <Ambulance size={16} /> Dial 108 (Medical Aid)
               </button>
             </a>
           </div>
@@ -249,42 +250,43 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
       )}
 
       {/* AI Recommended Support Cards */}
-      <div className="glass-card" style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-          <HeartHandshake size={20} color="var(--accent-teal)" />
-          <h3 style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-            AI-Recommended Parallel Support Services
+      <div className="glass-card" style={{ padding: '26px 28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
+          <HeartHandshake size={20} color="var(--accent-emerald)" />
+          <h3 style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+            Statutory Parallel Support Services
           </h3>
         </div>
-        <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-          Based on our real-time assessment of your spoken testimony, the following support services have been matched to assist you immediately:
+        <p style={{ fontSize: '0.86rem', color: 'var(--text-secondary)', marginBottom: '18px' }}>
+          Based on the trauma triage evaluation of your statement, the following institutional services have been queued to assist you:
         </p>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
           {(risk.recommendedSupport || []).map((support, idx) => (
             <div
               key={idx}
               className="glass-card"
-              style={{ padding: '16px', background: 'rgba(255, 255, 255, 0.03)' }}
+              style={{ padding: '18px', background: 'var(--bg-surface)' }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                {support.type.includes('Police') ? <ShieldAlert size={18} color="#ef4444" /> :
-                 support.type.includes('Medical') ? <Ambulance size={18} color="#f59e0b" /> :
-                 <Scale size={18} color="#06b6d4" />}
-                <h4 style={{ fontSize: '0.9rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                {support.type.includes('Police') ? <ShieldAlert size={18} color="var(--risk-critical-solid)" /> :
+                 support.type.includes('Medical') ? <Ambulance size={18} color="var(--accent-saffron)" /> :
+                 <Scale size={18} color="var(--primary-blue)" />}
+                <h4 style={{ fontSize: '0.92rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                   {support.type}
                 </h4>
               </div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              <p style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
                 {support.description}
               </p>
-              <div style={{ fontSize: '0.75rem', fontWeight: '600', color: 'var(--accent-cyan)' }}>
+              <div style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--primary-blue)' }}>
                 {support.contact}
               </div>
             </div>
           ))}
         </div>
       </div>
+
     </div>
   );
 }

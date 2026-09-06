@@ -25,8 +25,8 @@ const upload = multer({
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'online',
-    service: 'AI-Based Real-Time Stress & Trauma Assessment Module (NHAA)',
-    problemStatement: '26093',
+    service: 'NHAA AI Real-Time Stress & Trauma Assessment Gateway',
+    authority: 'Ministry of Social Justice and Empowerment, Government of India',
     timestamp: new Date().toISOString()
   });
 });
@@ -179,5 +179,5 @@ app.get('/api/demo-samples', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`[NHAA Trauma AI Backend] Running on http://localhost:${PORT}`);
-  console.log(`[NHAA Trauma AI Backend] SIH 2026 Problem Statement ID: 26093`);
+  console.log(`[NHAA Trauma AI Backend] Ministry of Social Justice and Empowerment`);
 });

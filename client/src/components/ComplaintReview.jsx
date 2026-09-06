@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, AlertTriangle, User, MapPin, Calendar, FileText, CheckCircle, ArrowLeft, Send, Sparkles, Volume2 } from 'lucide-react';
+import { Shield, AlertTriangle, User, MapPin, Calendar, FileText, CheckCircle, ArrowLeft, Send, Sparkles, Volume2, ShieldAlert } from 'lucide-react';
 
 export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -75,62 +75,63 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto' }}>
+    <div className="animate-fade-in" style={{ maxWidth: '960px', margin: '0 auto' }}>
+      
       {/* Top Banner with AI Real-Time Trauma Gauge */}
-      <div className={`glass-card ${risk.riskLevel === 'Critical' ? 'critical-pulse-box' : ''}`} style={{ padding: '24px', marginBottom: '24px' }}>
+      <div className={`glass-card ${risk.riskLevel === 'Critical' ? 'critical-pulse-box' : ''}`} style={{ padding: '26px 30px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
               <span className={`status-pill ${getRiskBadge(risk.riskLevel)}`}>
-                <AlertTriangle size={14} /> AI FUSED TRIAGE: {risk.riskLevel?.toUpperCase()} (SCORE: {risk.fusedScore}/100)
+                <ShieldAlert size={14} /> AI FUSED TRIAGE: {risk.riskLevel?.toUpperCase()} (SCORE: {risk.fusedScore}/100)
               </span>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                 {risk.urgencyLabel}
               </span>
             </div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-              Verify Your Complaint Before Official Submission
+            <h2 style={{ fontSize: '1.45rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+              Pre-Submission Verification Docket (शिकायत सत्यापन)
             </h2>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', marginTop: '4px' }}>
-              You can edit any field below. Once submitted, a legal Ticket ID and verifiable report will be generated instantly.
+              Verify the automatically extracted entities below. You may edit any field to correct speech recognition before final submission.
             </p>
           </div>
 
-          {/* Mini Distress Gauges */}
-          <div style={{ display: 'flex', gap: '16px', background: 'rgba(0, 0, 0, 0.35)', padding: '12px 18px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          {/* Dual Distress Meters */}
+          <div style={{ display: 'flex', gap: '16px', background: 'var(--bg-surface)', padding: '14px 20px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glass)' }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600' }}>VOICE STRESS</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: '800', color: 'var(--accent-cyan)' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>VOICE STRESS</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--primary-blue)' }}>
                 {acoustic.acousticStressScore || 50}%
               </div>
               <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>{acoustic.emotion?.split('/')[0]}</div>
             </div>
-            <div style={{ width: '1px', background: 'rgba(255, 255, 255, 0.1)' }} />
+            <div style={{ width: '1px', background: 'var(--border-glass)' }} />
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600' }}>TEXT TRAUMA</div>
-              <div style={{ fontSize: '1.25rem', fontWeight: '800', color: '#f59e0b' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>TEXT TRAUMA</div>
+              <div style={{ fontSize: '1.35rem', fontWeight: '800', color: 'var(--accent-saffron)' }}>
                 {data.nlpAnalysis?.textTraumaScore || 50}%
               </div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>Semantic Intensity</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--text-secondary)' }}>Threat Keywords</div>
             </div>
           </div>
         </div>
       </div>
 
       {/* Structured Sections Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '20px', marginBottom: '24px' }}>
         
         {/* Section 1: Accused & Incident Details */}
-        <div className="glass-card" style={{ padding: '22px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '10px' }}>
-            <AlertTriangle size={18} color="var(--risk-critical-text)" />
-            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-              1. Accused & Incident Details
+        <div className="glass-card" style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '10px' }}>
+            <AlertTriangle size={18} color="var(--risk-critical-solid)" />
+            <h3 style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+              1. Accused & Incident Specifics
             </h3>
           </div>
 
           <div style={{ marginBottom: '14px' }}>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '600' }}>
+            <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
               ACCUSED PERSON(S) / संस्था अथवा व्यक्ति का नाम
             </label>
             <input
@@ -140,9 +141,9 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0, 0, 0, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: 'var(--radius-xs)',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-glass)',
                 color: 'var(--text-primary)',
                 fontSize: '0.9rem'
               }}
@@ -150,7 +151,7 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
           </div>
 
           <div style={{ marginBottom: '14px' }}>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '600' }}>
+            <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
               NATURE OF ATROCITY / INCIDENT
             </label>
             <input
@@ -160,9 +161,9 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0, 0, 0, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: 'var(--radius-xs)',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-glass)',
                 color: 'var(--text-primary)',
                 fontSize: '0.9rem'
               }}
@@ -171,7 +172,7 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '600' }}>
+              <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
                 LOCATION / ग्राम / क्षेत्र
               </label>
               <input
@@ -181,17 +182,17 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(0, 0, 0, 0.3)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: 'var(--radius-xs)',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-glass)',
                   color: 'var(--text-primary)',
                   fontSize: '0.9rem'
                 }}
               />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '600' }}>
-                DATE / TIME OF OCCURRENCE
+              <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
+                OCCURRENCE DATE / TIME
               </label>
               <input
                 type="text"
@@ -200,9 +201,9 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
                 style={{
                   width: '100%',
                   padding: '9px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  background: 'rgba(0, 0, 0, 0.3)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: 'var(--radius-xs)',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-glass)',
                   color: 'var(--text-primary)',
                   fontSize: '0.9rem'
                 }}
@@ -212,16 +213,16 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
         </div>
 
         {/* Section 2: Victim Demographics */}
-        <div className="glass-card" style={{ padding: '22px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '10px' }}>
-            <User size={18} color="var(--accent-cyan)" />
-            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-              2. Victim / Complainant Details
+        <div className="glass-card" style={{ padding: '24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '10px' }}>
+            <User size={18} color="var(--primary-blue)" />
+            <h3 style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+              2. Complainant Identification
             </h3>
           </div>
 
           <div style={{ marginBottom: '14px' }}>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '600' }}>
+            <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
               FULL NAME / शिकायतकर्ता का नाम
             </label>
             <input
@@ -231,9 +232,9 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0, 0, 0, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: 'var(--radius-xs)',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-glass)',
                 color: 'var(--text-primary)',
                 fontSize: '0.9rem'
               }}
@@ -241,8 +242,8 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
           </div>
 
           <div style={{ marginBottom: '14px' }}>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '600' }}>
-              CONTACT PHONE NUMBER
+            <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
+              PRIMARY CONTACT NUMBER
             </label>
             <input
               type="text"
@@ -251,9 +252,9 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0, 0, 0, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: 'var(--radius-xs)',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-glass)',
                 color: 'var(--text-primary)',
                 fontSize: '0.9rem'
               }}
@@ -261,8 +262,8 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
           </div>
 
           <div>
-            <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '600' }}>
-              RESIDENTIAL ADDRESS / SAFE HAVEN
+            <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
+              CURRENT RESIDENCE / SHELTER ADDRESS
             </label>
             <input
               type="text"
@@ -271,9 +272,9 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
               style={{
                 width: '100%',
                 padding: '9px 12px',
-                borderRadius: 'var(--radius-sm)',
-                background: 'rgba(0, 0, 0, 0.3)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: 'var(--radius-xs)',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-glass)',
                 color: 'var(--text-primary)',
                 fontSize: '0.9rem'
               }}
@@ -283,17 +284,17 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
       </div>
 
       {/* Section 3: Speech Transcript & Auto-Summary */}
-      <div className="glass-card" style={{ padding: '22px', marginBottom: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '10px' }}>
-          <FileText size={18} color="var(--accent-indigo)" />
-          <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-            3. Spoken Statement Transcript & Auto-Structured Summary
+      <div className="glass-card" style={{ padding: '24px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '10px' }}>
+          <FileText size={18} color="var(--primary-blue)" />
+          <h3 style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+            3. Spoken Statement Transcript & Official Auto-Summary
           </h3>
         </div>
 
         <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '600' }}>
-            RAW VOICE TRANSCRIPT (EDITABLE IF ANY SPEECH RECOGNITION ERROR)
+          <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
+            RECORDED VOICE TRANSCRIPT (EDITABLE)
           </label>
           <textarea
             rows={3}
@@ -302,9 +303,9 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
             style={{
               width: '100%',
               padding: '10px 14px',
-              borderRadius: 'var(--radius-sm)',
-              background: 'rgba(0, 0, 0, 0.35)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: 'var(--radius-xs)',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-glass)',
               color: 'var(--text-primary)',
               fontSize: '0.9rem',
               lineHeight: '1.5'
@@ -313,8 +314,8 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
         </div>
 
         <div>
-          <label style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: '600' }}>
-            AI-GENERATED EXECUTIVE SUMMARY (FOR NODAL OFFICER ACTION)
+          <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
+            EXECUTIVE LEGAL SUMMARY (FOR INVESTIGATING OFFICER)
           </label>
           <textarea
             rows={3}
@@ -323,9 +324,9 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
             style={{
               width: '100%',
               padding: '10px 14px',
-              borderRadius: 'var(--radius-sm)',
-              background: 'rgba(0, 0, 0, 0.35)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
+              borderRadius: 'var(--radius-xs)',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border-glass)',
               color: 'var(--text-primary)',
               fontSize: '0.9rem',
               lineHeight: '1.5'
@@ -334,8 +335,8 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
         </div>
       </div>
 
-      {/* Buttons */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
+      {/* Action Navigation */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '14px' }}>
         <button
           onClick={onBack}
           className="btn-secondary"
@@ -349,18 +350,19 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
           onClick={handleSubmit}
           className="btn-primary"
           disabled={isSubmitting}
-          style={{ padding: '12px 32px', fontSize: '1.05rem' }}
+          style={{ padding: '12px 32px', fontSize: '1.02rem' }}
         >
           {isSubmitting ? (
-            <span>Registering Case...</span>
+            <span>Registering Case Docket...</span>
           ) : (
             <>
-              <span>Submit Report & Generate Ticket</span>
+              <span>Submit Report & Issue Ticket</span>
               <Send size={18} />
             </>
           )}
         </button>
       </div>
+
     </div>
   );
 }

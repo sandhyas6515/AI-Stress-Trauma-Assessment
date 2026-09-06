@@ -1,5 +1,5 @@
 /**
- * Demo Presets for Live Pitch & SIH Evaluation
+ * Standard Grievance Simulation Testbeds for System Audit and Testing
  * Includes paired test cases:
  *  - Scenario A: Same words, Distressed Panicked Tone -> CRITICAL RISK
  *  - Scenario B: Same words, Calm Reporting Tone -> MODERATE/LOW RISK

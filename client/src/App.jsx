@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Mic, Search, ShieldAlert, BarChart3, PhoneCall, AlertTriangle, CheckCircle2, ChevronRight, Volume2 } from 'lucide-react';
+import { Mic, Search, ShieldAlert, BarChart3, PhoneCall, AlertTriangle, CheckCircle2, ChevronRight, Volume2, Sun, Moon, Shield, Lock } from 'lucide-react';
 import VoiceRecorder from './components/VoiceRecorder';
 import ComplaintReview from './components/ComplaintReview';
 import SubmissionSuccess from './components/SubmissionSuccess';
@@ -13,6 +13,16 @@ export default function App() {
   const [submittedComplaint, setSubmittedComplaint] = useState(null);
   const [trackerTicketId, setTrackerTicketId] = useState('');
   const [demoScenarios, setDemoScenarios] = useState([]);
+  const [theme, setTheme] = useState('dark');
+
+  // Set theme attribute on html/body
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
 
   // Fetch preset demo scenarios from server
   useEffect(() => {
@@ -42,157 +52,206 @@ export default function App() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
-      {/* Top Emergency Hotlines Ticker */}
-      <div style={{ background: 'rgba(11, 19, 43, 0.9)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', padding: '6px 20px', fontSize: '0.78rem', color: 'var(--text-secondary)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontWeight: '700', color: 'var(--risk-critical-text)', display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <PhoneCall size={12} /> 24x7 TOLL-FREE EMERGENCY:
+      {/* Indian National Tricolor Ribbon */}
+      <div className="tricolor-ribbon" />
+
+      {/* Top Emergency Hotlines Bar */}
+      <div style={{
+        background: 'var(--bg-surface)',
+        borderBottom: '1px solid var(--border-glass)',
+        padding: '7px 24px',
+        fontSize: '0.8rem',
+        color: 'var(--text-secondary)',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '12px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+          <span style={{ fontWeight: '800', color: 'var(--risk-critical-text)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <PhoneCall size={13} /> 24x7 NATIONAL EMERGENCY HELPLINES:
           </span>
-          <span>Police: <strong>112</strong></span>
-          <span>•</span>
-          <span>National SC/ST Helpline: <strong>14566</strong></span>
-          <span>•</span>
-          <span>Women in Distress: <strong>1091</strong></span>
-          <span>•</span>
-          <span>Tele-MANAS Mental Health: <strong>14416</strong></span>
+          <span>Police / PCR: <strong style={{ color: 'var(--text-primary)' }}>112</strong></span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span>National SC/ST Atrocity Helpline: <strong style={{ color: 'var(--text-primary)' }}>14566</strong></span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span>Women Crisis Helpline: <strong style={{ color: 'var(--text-primary)' }}>1091</strong></span>
+          <span style={{ opacity: 0.4 }}>|</span>
+          <span>Tele-MANAS Psychological Support: <strong style={{ color: 'var(--text-primary)' }}>14416</strong></span>
         </div>
-        <div style={{ color: 'var(--accent-cyan)', fontWeight: '600' }}>
-          Smart India Hackathon 2026 | PS ID: 26093
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--accent-emerald)', fontWeight: '600' }}>
+            <Lock size={12} /> Secure Official Gateway
+          </div>
+          
+          {/* Light / Dark Mode Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            style={{
+              background: 'var(--bg-surface-subtle)',
+              border: '1px solid var(--border-glass)',
+              color: 'var(--text-primary)',
+              borderRadius: 'var(--radius-sm)',
+              padding: '4px 10px',
+              fontSize: '0.75rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontWeight: '600'
+            }}
+            title="Toggle Light / Dark Theme"
+          >
+            {theme === 'dark' ? <Sun size={13} color="#f59e0b" /> : <Moon size={13} color="#2563eb" />}
+            <span>{theme === 'dark' ? 'Day Mode' : 'Night Mode'}</span>
+          </button>
         </div>
       </div>
 
-      {/* Main Navigation Header */}
+      {/* Main Official Header */}
       <header style={{
-        background: 'rgba(9, 13, 22, 0.85)',
-        backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+        background: 'var(--bg-card)',
+        backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid var(--border-glass)',
         padding: '14px 24px',
         position: 'sticky',
         top: 0,
         zIndex: 1000
       }}>
-        <div style={{ maxWidth: '1280px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           
-          {/* Brand Logo & Title */}
+          {/* Official Emblem & Identity */}
           <div
             onClick={() => setActiveTab('record')}
-            style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '14px', cursor: 'pointer' }}
           >
+            {/* Gov Seal Emblem Style Icon */}
             <div style={{
-              width: '42px',
-              height: '42px',
+              width: '44px',
+              height: '44px',
               borderRadius: '12px',
-              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+              background: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              boxShadow: '0 4px 14px rgba(6, 182, 212, 0.4)'
+              boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
             }}>
-              <Mic size={22} color="#ffffff" />
+              <Shield size={24} color="#ffffff" />
             </div>
+
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '1.25rem', fontWeight: '800', letterSpacing: '-0.02em', color: 'var(--text-primary)' }}>
                   NHAA
                 </span>
-                <span className="status-pill badge-critical" style={{ fontSize: '0.65rem', padding: '2px 8px' }}>
-                  AI Trauma Triage
+                <span style={{ fontSize: '0.78rem', fontWeight: '700', color: 'var(--text-muted)' }}>
+                  राष्ट्रीय अत्याचार निवारण पोर्टल
+                </span>
+                <span className="status-pill" style={{ background: 'rgba(37, 99, 235, 0.15)', color: 'var(--primary-blue)', fontSize: '0.68rem', padding: '2px 8px' }}>
+                  AI Trauma Triage Active
                 </span>
               </div>
-              <div style={{ fontSize: '0.74rem', color: 'var(--text-secondary)' }}>
-                National Helpline & Application for Atrocities | Real-Time Voice Assessment
+              <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '2px' }}>
+                National Helpline & Application for Atrocities | Ministry of Social Justice & Empowerment, Govt. of India
               </div>
             </div>
           </div>
 
           {/* Navigation Tabs */}
-          <nav style={{ display: 'flex', gap: '8px', background: 'rgba(255, 255, 255, 0.04)', padding: '4px', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <nav style={{ display: 'flex', gap: '6px', background: 'var(--bg-surface-subtle)', padding: '5px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glass)' }}>
             <button
               id="nav-voice-portal"
               onClick={() => setActiveTab('record')}
               style={{
-                background: (activeTab === 'record' || activeTab === 'review' || activeTab === 'submitted') ? 'var(--accent-cyan)' : 'transparent',
-                color: (activeTab === 'record' || activeTab === 'review' || activeTab === 'submitted') ? '#090d16' : 'var(--text-secondary)',
+                background: (activeTab === 'record' || activeTab === 'review' || activeTab === 'submitted') ? 'var(--primary-blue)' : 'transparent',
+                color: (activeTab === 'record' || activeTab === 'review' || activeTab === 'submitted') ? '#ffffff' : 'var(--text-secondary)',
                 fontWeight: '700',
                 border: 'none',
                 borderRadius: 'var(--radius-sm)',
-                padding: '8px 14px',
+                padding: '9px 16px',
                 fontSize: '0.84rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
+                gap: '7px',
+                transition: 'all 0.2s ease',
+                boxShadow: (activeTab === 'record' || activeTab === 'review' || activeTab === 'submitted') ? 'var(--shadow-primary)' : 'none'
               }}
             >
-              <Mic size={15} />
-              <span>Victim Voice Gateway</span>
+              <Mic size={16} />
+              <span>Voice Grievance Gateway</span>
             </button>
 
             <button
               id="nav-tracker"
               onClick={() => setActiveTab('track')}
               style={{
-                background: activeTab === 'track' ? 'var(--accent-cyan)' : 'transparent',
-                color: activeTab === 'track' ? '#090d16' : 'var(--text-secondary)',
+                background: activeTab === 'track' ? 'var(--primary-blue)' : 'transparent',
+                color: activeTab === 'track' ? '#ffffff' : 'var(--text-secondary)',
                 fontWeight: '700',
                 border: 'none',
                 borderRadius: 'var(--radius-sm)',
-                padding: '8px 14px',
+                padding: '9px 16px',
                 fontSize: '0.84rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
+                gap: '7px',
+                transition: 'all 0.2s ease',
+                boxShadow: activeTab === 'track' ? 'var(--shadow-primary)' : 'none'
               }}
             >
-              <Search size={15} />
-              <span>Track Complaint</span>
+              <Search size={16} />
+              <span>Track Docket Status</span>
             </button>
 
             <button
               id="nav-official-dashboard"
               onClick={() => setActiveTab('official')}
               style={{
-                background: activeTab === 'official' ? 'var(--accent-cyan)' : 'transparent',
-                color: activeTab === 'official' ? '#090d16' : 'var(--text-secondary)',
+                background: activeTab === 'official' ? 'var(--primary-blue)' : 'transparent',
+                color: activeTab === 'official' ? '#ffffff' : 'var(--text-secondary)',
                 fontWeight: '700',
                 border: 'none',
                 borderRadius: 'var(--radius-sm)',
-                padding: '8px 14px',
+                padding: '9px 16px',
                 fontSize: '0.84rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
+                gap: '7px',
+                transition: 'all 0.2s ease',
+                boxShadow: activeTab === 'official' ? 'var(--shadow-primary)' : 'none'
               }}
             >
-              <ShieldAlert size={15} />
-              <span>Official Triage Center</span>
+              <ShieldAlert size={16} />
+              <span>Nodal Command Center</span>
             </button>
 
             <button
               id="nav-analytics"
               onClick={() => setActiveTab('analytics')}
               style={{
-                background: activeTab === 'analytics' ? 'var(--accent-cyan)' : 'transparent',
-                color: activeTab === 'analytics' ? '#090d16' : 'var(--text-secondary)',
+                background: activeTab === 'analytics' ? 'var(--primary-blue)' : 'transparent',
+                color: activeTab === 'analytics' ? '#ffffff' : 'var(--text-secondary)',
                 fontWeight: '700',
                 border: 'none',
                 borderRadius: 'var(--radius-sm)',
-                padding: '8px 14px',
+                padding: '9px 16px',
                 fontSize: '0.84rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                transition: 'all 0.2s ease'
+                gap: '7px',
+                transition: 'all 0.2s ease',
+                boxShadow: activeTab === 'analytics' ? 'var(--shadow-primary)' : 'none'
               }}
             >
-              <BarChart3 size={15} />
-              <span>Analytics</span>
+              <BarChart3 size={16} />
+              <span>Executive Analytics</span>
             </button>
           </nav>
 
@@ -200,7 +259,7 @@ export default function App() {
       </header>
 
       {/* Main Content View Container */}
-      <main style={{ flex: 1, padding: '30px 20px', maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
+      <main style={{ flex: 1, padding: '32px 24px', maxWidth: '1320px', margin: '0 auto', width: '100%' }}>
         
         {activeTab === 'record' && (
           <VoiceRecorder
@@ -238,28 +297,26 @@ export default function App() {
 
       </main>
 
-      {/* Modern Empathetic Footer */}
+      {/* Official Government Portal Footer */}
       <footer style={{
-        background: 'rgba(9, 13, 22, 0.95)',
-        borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-        padding: '24px 20px',
+        background: 'var(--bg-surface)',
+        borderTop: '1px solid var(--border-glass)',
+        padding: '24px 24px',
         color: 'var(--text-muted)',
         fontSize: '0.82rem',
-        textAlign: 'center'
+        marginTop: 'auto'
       }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+        <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
           <div>
-            <strong>National Helpline / Application for Atrocities (NHAA)</strong> — AI Stress & Trauma Assessment Architecture
+            <strong style={{ color: 'var(--text-primary)' }}>National Helpline & Application for Atrocities (NHAA)</strong>
+            <div style={{ marginTop: '2px' }}>Ministry of Social Justice and Empowerment, Government of India</div>
           </div>
-          <div>
-            Built for Smart India Hackathon 2026 | PS ID: 26093 | Smart Automation
-          </div>
-          <div style={{ display: 'flex', gap: '16px' }}>
-            <span>Privacy Mandate Compliance (§12)</span>
+          <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+            <span>Statutory Victim Protection Protocol</span>
             <span>•</span>
-            <span>Multilingual ASR Engine</span>
+            <span>Automated Trauma Risk Classification</span>
             <span>•</span>
-            <span>Dual Acoustic & Text Fusion</span>
+            <span>Scheduled Castes and Scheduled Tribes (Prevention of Atrocities) Act</span>
           </div>
         </div>
       </footer>

@@ -1,7 +1,7 @@
 {
   "name": "nhha-trauma-assessment-server",
   "version": "1.0.0",
-  "description": "Backend AI-Based Real-Time Stress & Trauma Assessment Module for NHAA (PS 26093)",
+  "description": "Backend AI-Based Real-Time Stress & Trauma Assessment Gateway for NHAA",
   "main": "server.js",
   "type": "module",
   "scripts": {

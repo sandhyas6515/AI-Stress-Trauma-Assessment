@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Square, Play, Pause, RotateCcw, ArrowRight, Activity, Sparkles, Volume2, ShieldAlert } from 'lucide-react';
+import { Mic, Square, Play, Pause, RotateCcw, ArrowRight, Activity, ShieldCheck, Volume2, ShieldAlert, Sparkles, Lock, Headphones } from 'lucide-react';
 
 const SUPPORTED_LANGUAGES = [
-  { code: 'hi', name: 'Hindi (हिंदी)', speechCode: 'hi-IN' },
-  { code: 'en', name: 'English', speechCode: 'en-IN' },
-  { code: 'mr', name: 'Marathi (मराठी)', speechCode: 'mr-IN' },
-  { code: 'ta', name: 'Tamil (தமிழ்)', speechCode: 'ta-IN' },
-  { code: 'bn', name: 'Bengali (বাংলা)', speechCode: 'bn-IN' }
+  { code: 'hi', name: 'हिंदी (Hindi)', speechCode: 'hi-IN' },
+  { code: 'en', name: 'English (Indian)', speechCode: 'en-IN' },
+  { code: 'mr', name: 'मराठी (Marathi)', speechCode: 'mr-IN' },
+  { code: 'ta', name: 'தமிழ் (Tamil)', speechCode: 'ta-IN' },
+  { code: 'bn', name: 'বাংলা (Bengali)', speechCode: 'bn-IN' }
 ];
 
 export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] }) {
@@ -21,7 +21,6 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
   const [clientAudioMetrics, setClientAudioMetrics] = useState(null);
   const [selectedPresetId, setSelectedPresetId] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [speechRecognitionSupported, setSpeechRecognitionSupported] = useState(true);
 
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -32,15 +31,7 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
   const recognitionRef = useRef(null);
   const audioElementRef = useRef(null);
   const durationTimerRef = useRef(null);
-  const metricsCollectorRef = useRef({ energies: [], zeroCrossings: [], pauseCount: 0, totalFrames: 0 });
-
-  // Check speech recognition capability
-  useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      setSpeechRecognitionSupported(false);
-    }
-  }, []);
+  const metricsCollectorRef = useRef({ energies: [], pauseCount: 0, totalFrames: 0 });
 
   // Clean up on unmount
   useEffect(() => {
@@ -66,10 +57,10 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
       ctx.beginPath();
       ctx.moveTo(0, height / 2);
       for (let x = 0; x < width; x += 4) {
-        const y = height / 2 + Math.sin(x * 0.04) * 2;
+        const y = height / 2 + Math.sin(x * 0.05) * 3;
         ctx.lineTo(x, y);
       }
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
       ctx.lineWidth = 2;
       ctx.stroke();
     }
@@ -78,7 +69,7 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
   const startRecording = async () => {
     try {
       audioChunksRef.current = [];
-      metricsCollectorRef.current = { energies: [], zeroCrossings: [], pauseCount: 0, totalFrames: 0 };
+      metricsCollectorRef.current = { energies: [], pauseCount: 0, totalFrames: 0 };
       setTranscript('');
       setInterimTranscript('');
       setAudioUrl(null);
@@ -114,12 +105,10 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
 
-        // Compute client-side audio analysis metrics
         const metrics = metricsCollectorRef.current;
         if (metrics.totalFrames > 10) {
           const avgEnergy = metrics.energies.reduce((a, b) => a + b, 0) / metrics.energies.length;
           const pauseRatio = metrics.pauseCount / metrics.totalFrames;
-          // compute pitch volatility from energy deltas
           let energyDeltas = 0;
           for (let i = 1; i < metrics.energies.length; i++) {
             energyDeltas += Math.abs(metrics.energies[i] - metrics.energies[i - 1]);
@@ -165,18 +154,13 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
           setInterimTranscript(currentInterim);
         };
 
-        recognition.onerror = (e) => {
-          console.warn('Speech recognition warning:', e.error);
-        };
-
         try {
           recognition.start();
         } catch (err) {
-          console.warn('Recognition start caught:', err);
+          console.warn('Recognition start error:', err);
         }
       }
 
-      // 5. Visualizer Canvas loop
       setIsRecording(true);
       setRecordingDuration(0);
       durationTimerRef.current = setInterval(() => {
@@ -185,8 +169,8 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
 
       drawWaveform();
     } catch (err) {
-      console.error('Error opening microphone:', err);
-      alert('Microphone access unavailable or denied. You can also select one of the "Preset Demo Scenarios" below to evaluate immediately!');
+      console.error('Microphone error:', err);
+      alert('Microphone access unavailable or blocked. You can also select one of the "Demonstration Case Audits" below for evaluation.');
     }
   };
 
@@ -206,7 +190,6 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
       const height = canvas.height;
       ctx.clearRect(0, 0, width, height);
 
-      // Acoustic metric tracking
       let sumSquares = 0;
       for (let i = 0; i < bufferLength; i++) {
         const normalized = (dataArray[i] - 128) / 128;
@@ -219,12 +202,12 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
         metricsCollectorRef.current.pauseCount++;
       }
 
-      // Draw dynamic visual wave
-      ctx.lineWidth = 3;
+      // Draw subtle elegant blue/cyan wave
+      ctx.lineWidth = 2.5;
       const gradient = ctx.createLinearGradient(0, 0, width, 0);
-      gradient.addColorStop(0, '#06b6d4');
-      gradient.addColorStop(0.5, '#6366f1');
-      gradient.addColorStop(1, '#14b8a6');
+      gradient.addColorStop(0, '#2563eb');
+      gradient.addColorStop(0.5, '#60a5fa');
+      gradient.addColorStop(1, '#34d399');
       ctx.strokeStyle = gradient;
 
       ctx.beginPath();
@@ -305,7 +288,7 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
   const handleProceed = async () => {
     const fullText = (transcript + ' ' + interimTranscript).trim();
     if (!fullText && !audioBlob) {
-      alert('Please speak your complaint or choose one of the preset scenarios below.');
+      alert('Please speak your grievance or select a sample scenario below.');
       return;
     }
 
@@ -359,47 +342,49 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
   };
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '900px', margin: '0 auto' }}>
-      {/* Intro Banner */}
-      <div className="glass-card" style={{ padding: '24px', marginBottom: '24px', position: 'relative', overflow: 'hidden' }}>
+    <div className="animate-fade-in" style={{ maxWidth: '960px', margin: '0 auto' }}>
+      
+      {/* Empathetic Institutional Header Card */}
+      <div className="glass-card" style={{ padding: '24px 28px', marginBottom: '24px', position: 'relative' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-              <span className="status-pill badge-critical" style={{ fontSize: '0.72rem' }}>
-                <ShieldAlert size={13} /> 24x7 NHAA Emergency Voice Gateway
+              <span className="status-pill" style={{ background: 'rgba(37, 99, 235, 0.12)', color: 'var(--primary-blue)', fontSize: '0.72rem' }}>
+                <ShieldCheck size={13} /> Official Statutory Grievance Gateway
               </span>
-              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>PS ID: 26093</span>
+              <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>SC/ST (PoA) Act Protection</span>
             </div>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-              Speak Freely in Your Language
+            <h1 style={{ fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+              अपनी भाषा में बोलें — हम सुन रहे हैं
             </h1>
             <p style={{ color: 'var(--text-secondary)', fontSize: '0.92rem', marginTop: '4px' }}>
-              No typing needed. Speak in your natural voice. Our dual AI assesses distress signals and legal details in real time.
+              No forms or typing required. Speak naturally in your own regional language. The system assesses distress signals and extracts legal facts in real time.
             </p>
           </div>
 
-          {/* Language Selector */}
-          <div>
-            <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: '600' }}>
-              CHOOSE LANGUAGE / भाषा चुनें
+          {/* Language Selection */}
+          <div style={{ background: 'var(--bg-surface-subtle)', padding: '10px 14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-glass)' }}>
+            <label style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700', textTransform: 'uppercase' }}>
+              Select Spoken Language / भाषा
             </label>
             <select
               value={selectedLanguage}
               onChange={(e) => setSelectedLanguage(e.target.value)}
               disabled={isRecording}
               style={{
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.16)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '8px 12px',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-glass)',
+                borderRadius: 'var(--radius-xs)',
+                padding: '7px 12px',
                 color: 'var(--text-primary)',
-                fontWeight: '600',
+                fontWeight: '700',
+                fontSize: '0.88rem',
                 outline: 'none',
                 cursor: 'pointer'
               }}
             >
               {SUPPORTED_LANGUAGES.map(lang => (
-                <option key={lang.code} value={lang.code} style={{ background: '#1e293b' }}>
+                <option key={lang.code} value={lang.code}>
                   {lang.name}
                 </option>
               ))}
@@ -408,99 +393,75 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
         </div>
       </div>
 
-      {/* Main Recording Console */}
-      <div className="glass-card" style={{ padding: '36px', textAlign: 'center', marginBottom: '24px', position: 'relative' }}>
-        {/* Waveform Visualizer Canvas */}
-        <div style={{ marginBottom: '24px', background: 'rgba(0, 0, 0, 0.35)', borderRadius: 'var(--radius-md)', padding: '12px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', padding: '0 8px' }}>
-            <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Activity size={14} color="var(--accent-cyan)" /> Live Acoustic Waveform & Pitch Monitor
+      {/* Main Voice Recording Console */}
+      <div className="glass-card" style={{ padding: '36px 32px', textAlign: 'center', marginBottom: '24px' }}>
+        
+        {/* Live Acoustic Waveform Visualizer */}
+        <div style={{ marginBottom: '26px', background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', padding: '14px 18px', border: '1px solid var(--border-glass)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.76rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}>
+              <Activity size={14} color="var(--primary-blue)" /> Real-Time Acoustic Harmonics & Pitch Monitor
             </span>
-            <span style={{ fontSize: '0.85rem', fontWeight: '700', color: isRecording ? 'var(--risk-critical-text)' : 'var(--text-muted)' }}>
-              {isRecording ? `● REC ${formatSeconds(recordingDuration)}` : 'READY TO RECORD'}
+            <span style={{ fontSize: '0.82rem', fontWeight: '800', color: isRecording ? 'var(--risk-critical-text)' : 'var(--text-muted)' }}>
+              {isRecording ? `● RECORDING (${formatSeconds(recordingDuration)})` : 'AUDIO CHANNEL STANDBY'}
             </span>
           </div>
           <canvas
             ref={canvasRef}
-            width={720}
-            height={90}
-            style={{ width: '100%', height: '90px', display: 'block' }}
+            width={760}
+            height={85}
+            style={{ width: '100%', height: '85px', display: 'block' }}
           />
         </div>
 
-        {/* Big Pulse Mic Button */}
-        <div style={{ margin: '30px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        {/* Central Tactile Record Button */}
+        <div style={{ margin: '28px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
           {!isRecording ? (
             <button
               id="start-recording-btn"
               onClick={startRecording}
-              className="glass-card-interactive"
-              style={{
-                width: '110px',
-                height: '110px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-                border: '3px solid rgba(255, 255, 255, 0.3)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                boxShadow: '0 8px 30px rgba(6, 182, 212, 0.45)',
-                color: '#fff',
-                transition: 'all 0.25s ease'
-              }}
+              className="mic-btn-idle"
             >
               <Mic size={38} />
-              <span style={{ fontSize: '0.72rem', fontWeight: '700', marginTop: '4px', letterSpacing: '0.04em' }}>TAP TO SPEAK</span>
+              <span style={{ fontSize: '0.72rem', fontWeight: '800', marginTop: '6px', letterSpacing: '0.04em' }}>
+                TAP TO SPEAK
+              </span>
             </button>
           ) : (
             <button
               id="stop-recording-btn"
               onClick={stopRecording}
-              className="mic-recording-pulse"
-              style={{
-                width: '110px',
-                height: '110px',
-                borderRadius: '50%',
-                background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-                border: '3px solid rgba(255, 255, 255, 0.4)',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                color: '#fff',
-                boxShadow: '0 8px 30px rgba(239, 68, 68, 0.5)'
-              }}
+              className="mic-btn-recording"
             >
-              <Square size={34} />
-              <span style={{ fontSize: '0.72rem', fontWeight: '700', marginTop: '4px' }}>TAP TO STOP</span>
+              <Square size={32} />
+              <span style={{ fontSize: '0.72rem', fontWeight: '800', marginTop: '6px' }}>
+                TAP TO STOP
+              </span>
             </button>
           )}
         </div>
 
-        {/* Instructions */}
+        {/* User Guidance */}
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '20px' }}>
           {isRecording ? (
-            <span style={{ color: 'var(--accent-cyan)', fontWeight: '600' }}>
-              Listening... Tell us what happened, who was involved, and your current location.
+            <span style={{ color: 'var(--primary-blue)', fontWeight: '700' }}>
+              Listening... Tell us what happened, who committed the atrocity, and where you are located.
             </span>
           ) : (
-            <span>Tap the microphone to speak, or select one of the test scenarios below.</span>
+            <span>Tap the microphone to speak your statement, or select one of the audit test scenarios below.</span>
           )}
         </p>
 
         {/* Audio Replay bar if recorded */}
         {audioUrl && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', background: 'rgba(255, 255, 255, 0.06)', padding: '10px 18px', borderRadius: 'var(--radius-md)', marginBottom: '20px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', background: 'var(--bg-surface)', padding: '10px 18px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-glass)', marginBottom: '20px' }}>
             <button
               onClick={handleTogglePlay}
-              style={{ background: 'none', border: 'none', color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+              style={{ background: 'none', border: 'none', color: 'var(--primary-blue)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
             >
-              {isPlaying ? <Pause size={20} color="var(--accent-cyan)" /> : <Play size={20} color="var(--accent-cyan)" />}
+              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
             </button>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Recorded Voice Testimony</span>
+            <span style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>Listen to Recorded Audio Testimony</span>
             <audio
               ref={audioElementRef}
               src={audioUrl}
@@ -516,22 +477,22 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
           </div>
         )}
 
-        {/* Live Transcript Display Box */}
-        <div style={{ textAlign: 'left', background: 'rgba(0, 0, 0, 0.4)', borderRadius: 'var(--radius-md)', padding: '18px', border: '1px solid rgba(255, 255, 255, 0.08)', minHeight: '90px' }}>
+        {/* Live Speech-to-Text Transcript Box */}
+        <div style={{ textAlign: 'left', background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', padding: '18px 20px', border: '1px solid var(--border-glass)', minHeight: '95px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Real-Time Speech-to-Text Transcript
+            <span style={{ fontSize: '0.74rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Speech-to-Text Live Transcript (वाक् से पाठ)
             </span>
             {isRecording && (
-              <span className="status-pill" style={{ background: 'rgba(6, 182, 212, 0.15)', color: 'var(--accent-cyan)', fontSize: '0.7rem' }}>
-                <Volume2 size={12} /> Streaming
+              <span className="status-pill" style={{ background: 'rgba(37, 99, 235, 0.15)', color: 'var(--primary-blue)', fontSize: '0.68rem' }}>
+                <Volume2 size={12} /> Live Streaming
               </span>
             )}
           </div>
           <p style={{ color: transcript ? 'var(--text-primary)' : 'var(--text-muted)', fontSize: '0.95rem', lineHeight: '1.6', fontStyle: transcript ? 'normal' : 'italic' }}>
             {transcript || interimTranscript || 'Your spoken words will appear here in real time...'}
             {interimTranscript && (
-              <span style={{ color: 'var(--accent-cyan)', opacity: 0.8 }}> {interimTranscript}</span>
+              <span style={{ color: 'var(--primary-blue)', opacity: 0.8 }}> {interimTranscript}</span>
             )}
           </p>
         </div>
@@ -547,14 +508,14 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
               opacity: (transcript || audioBlob || selectedPresetId) && !isRecording ? 1 : 0.5,
               cursor: (transcript || audioBlob || selectedPresetId) && !isRecording ? 'pointer' : 'not-allowed',
               padding: '12px 28px',
-              fontSize: '1rem'
+              fontSize: '0.98rem'
             }}
           >
             {isProcessing ? (
-              <span>Analyzing Trauma & Distress...</span>
+              <span>Analyzing Trauma Signals & Legal Entities...</span>
             ) : (
               <>
-                <span>Review Assessment & Submit</span>
+                <span>Review & Proceed to Verification</span>
                 <ArrowRight size={18} />
               </>
             )}
@@ -562,16 +523,16 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
         </div>
       </div>
 
-      {/* Preset Evaluation Scenarios Box (Essential for SIH Judges and Paired Demonstration) */}
-      <div className="glass-card" style={{ padding: '24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px' }}>
-          <Sparkles size={18} color="var(--accent-cyan)" />
-          <h3 style={{ fontSize: '1.05rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-            Or Try Live Evaluation Scenarios (SIH Demo Presets)
+      {/* Case Scenarios (Renamed & Refined: Standard Grievance Simulation Testbeds) */}
+      <div className="glass-card" style={{ padding: '26px 28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+          <Headphones size={18} color="var(--primary-blue)" />
+          <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+            Standard Grievance Simulation Testbeds (System Audit Scenarios)
           </h3>
         </div>
         <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '16px' }}>
-          Test the difference between panicked vocal distress vs calm delivery, or evaluate regional language complaints:
+          Audit the real-time difference between panicked vocal distress vs calm reporting tone, or test regional linguistic coverage:
         </p>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
@@ -585,8 +546,8 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
                 style={{
                   padding: '16px',
                   cursor: 'pointer',
-                  borderColor: isSelected ? 'var(--accent-cyan)' : 'var(--border-glass)',
-                  background: isSelected ? 'rgba(6, 182, 212, 0.12)' : 'rgba(255, 255, 255, 0.02)'
+                  borderColor: isSelected ? 'var(--primary-blue)' : 'var(--border-glass)',
+                  background: isSelected ? 'var(--risk-moderate-bg)' : 'var(--bg-surface-subtle)'
                 }}
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
@@ -596,22 +557,23 @@ export default function VoiceRecorder({ onProceedToReview, demoScenarios = [] })
                   }`} style={{ fontSize: '0.68rem' }}>
                     {scenario.tag}
                   </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{scenario.languageName}</span>
+                  <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: '600' }}>{scenario.languageName}</span>
                 </div>
-                <h4 style={{ fontSize: '0.88rem', fontWeight: '600', color: 'var(--text-primary)', marginBottom: '6px' }}>
-                  {scenario.title}
+                <h4 style={{ fontSize: '0.88rem', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '6px' }}>
+                  {scenario.title.replace('Scenario 1A: ', '').replace('Scenario 1B: ', '').replace('Scenario 2: ', '').replace('Scenario 3: ', '')}
                 </h4>
-                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', lineClamp: 2, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                   "{scenario.transcript}"
                 </p>
-                <div style={{ marginTop: '10px', fontSize: '0.72rem', color: 'var(--accent-cyan)', fontWeight: '600' }}>
-                  {isSelected ? '✓ Selected for Assessment' : 'Click to Load Sample →'}
+                <div style={{ marginTop: '10px', fontSize: '0.74rem', color: 'var(--primary-blue)', fontWeight: '700' }}>
+                  {isSelected ? '✓ Loaded for Official Triage' : 'Select Case Testbed →'}
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+
     </div>
   );
 }

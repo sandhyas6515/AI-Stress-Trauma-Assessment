@@ -1,7 +1,7 @@
 /**
  * In-Memory & File-backed Complaints Store
  * Pre-seeded with realistic cases across all risk levels and Indian languages
- * for live SIH demonstration.
+ * for national portal grievance triage and demonstration.
  */
 
 let complaints = [

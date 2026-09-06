@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BarChart3, PieChart, ShieldAlert, Globe2, Clock, CheckCircle2, TrendingUp } from 'lucide-react';
+import { BarChart3, PieChart, ShieldAlert, Globe2, Clock, CheckCircle2, TrendingUp, ShieldCheck } from 'lucide-react';
 
 export default function AnalyticsPanel() {
   const [stats, setStats] = useState(null);
@@ -28,7 +28,7 @@ export default function AnalyticsPanel() {
   if (loading || !stats) {
     return (
       <div className="glass-card" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-        Loading real-time operational intelligence...
+        Loading official operational intelligence...
       </div>
     );
   }
@@ -40,147 +40,147 @@ export default function AnalyticsPanel() {
   const lowPct = Math.round((stats.low / total) * 100);
 
   return (
-    <div className="animate-fade-in" style={{ maxWidth: '1100px', margin: '0 auto' }}>
+    <div className="animate-fade-in" style={{ maxWidth: '1140px', margin: '0 auto' }}>
       
       {/* Title Card */}
-      <div className="glass-card" style={{ padding: '24px', marginBottom: '24px' }}>
+      <div className="glass-card" style={{ padding: '26px 30px', marginBottom: '24px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-          <TrendingUp size={20} color="var(--accent-cyan)" />
-          <h2 style={{ fontSize: '1.4rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+          <TrendingUp size={22} color="var(--primary-blue)" />
+          <h2 style={{ fontSize: '1.45rem', fontWeight: '800', color: 'var(--text-primary)' }}>
             NHAA Operational & Triage Intelligence Dashboard
           </h2>
         </div>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>
-          Real-time metrics on psychological trauma distribution, language coverage, rapid emergency escalations, and SLA compliance.
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+          Real-time institutional metrics on psychological trauma triage distribution, scheduled language coverage, rapid emergency escalations, and statutory SLA compliance.
         </p>
       </div>
 
       {/* KPI Cards Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-        <div className="glass-card" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        <div className="glass-card" style={{ padding: '22px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.74rem', fontWeight: '800', textTransform: 'uppercase' }}>
             <Clock size={16} /> Triage Time Reduction
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: '#10b981', marginTop: '6px' }}>
+          <div style={{ fontSize: '1.9rem', fontWeight: '800', color: 'var(--accent-emerald)', marginTop: '6px' }}>
             82% Faster
           </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
             ~3 min voice filing vs 15-20 min manual
           </div>
         </div>
 
-        <div className="glass-card" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>
-            <ShieldAlert size={16} color="var(--risk-critical-text)" /> Critical Escalation SLA
+        <div className="glass-card" style={{ padding: '22px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.74rem', fontWeight: '800', textTransform: 'uppercase' }}>
+            <ShieldAlert size={16} color="var(--risk-critical-solid)" /> Critical Escalation SLA
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--risk-critical-text)', marginTop: '6px' }}>
+          <div style={{ fontSize: '1.9rem', fontWeight: '800', color: 'var(--risk-critical-solid)', marginTop: '6px' }}>
             {stats.criticalEscalationRate || '100%'}
           </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
             Surfaced to top of queue in &lt; 5 seconds
           </div>
         </div>
 
-        <div className="glass-card" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>
-            <CheckCircle2 size={16} color="var(--accent-teal)" /> Emergency Dispatches
+        <div className="glass-card" style={{ padding: '22px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.74rem', fontWeight: '800', textTransform: 'uppercase' }}>
+            <CheckCircle2 size={16} color="var(--primary-blue)" /> Emergency Dispatches
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--accent-teal)', marginTop: '6px' }}>
+          <div style={{ fontSize: '1.9rem', fontWeight: '800', color: 'var(--primary-blue)', marginTop: '6px' }}>
             {stats.activeEmergencyDispatches || 1} Active
           </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-            PCR Units / Medical Ambulances
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+            PCR Patrol & Medical Units
           </div>
         </div>
 
-        <div className="glass-card" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: '700', textTransform: 'uppercase' }}>
-            <Globe2 size={16} color="var(--accent-cyan)" /> Languages Active
+        <div className="glass-card" style={{ padding: '22px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-muted)', fontSize: '0.74rem', fontWeight: '800', textTransform: 'uppercase' }}>
+            <Globe2 size={16} color="var(--accent-saffron)" /> Languages Active
           </div>
-          <div style={{ fontSize: '1.8rem', fontWeight: '800', color: 'var(--accent-cyan)', marginTop: '6px' }}>
+          <div style={{ fontSize: '1.9rem', fontWeight: '800', color: 'var(--accent-saffron)', marginTop: '6px' }}>
             5 Languages
           </div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
             Hindi, English, Marathi, Tamil, Bengali
           </div>
         </div>
       </div>
 
       {/* Charts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '20px', marginBottom: '24px' }}>
         
         {/* Risk Level Distribution */}
-        <div className="glass-card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
-            <BarChart3 size={18} color="var(--accent-cyan)" />
-            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+        <div className="glass-card" style={{ padding: '26px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+            <BarChart3 size={18} color="var(--primary-blue)" />
+            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-primary)' }}>
               Complaints by Risk & Trauma Severity
             </h3>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '4px' }}>
-                <span style={{ color: 'var(--risk-critical-text)', fontWeight: '700' }}>Critical (Active Threat / Panic)</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '5px' }}>
+                <span style={{ color: 'var(--risk-critical-text)', fontWeight: '700' }}>Critical (Active Threat / Acute Panic)</span>
                 <span style={{ color: 'var(--text-primary)', fontWeight: '700' }}>{stats.critical} cases ({critPct}%)</span>
               </div>
-              <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '999px', overflow: 'hidden' }}>
-                <div style={{ width: `${critPct}%`, height: '100%', background: '#ef4444', borderRadius: '999px' }} />
+              <div style={{ height: '8px', background: 'var(--bg-surface)', borderRadius: '999px', overflow: 'hidden' }}>
+                <div style={{ width: `${critPct}%`, height: '100%', background: 'var(--risk-critical-solid)', borderRadius: '999px' }} />
               </div>
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '5px' }}>
                 <span style={{ color: 'var(--risk-high-text)', fontWeight: '700' }}>High (Atrocity / Physical Battery)</span>
                 <span style={{ color: 'var(--text-primary)', fontWeight: '700' }}>{stats.high} cases ({highPct}%)</span>
               </div>
-              <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '999px', overflow: 'hidden' }}>
-                <div style={{ width: `${highPct}%`, height: '100%', background: '#f59e0b', borderRadius: '999px' }} />
+              <div style={{ height: '8px', background: 'var(--bg-surface)', borderRadius: '999px', overflow: 'hidden' }}>
+                <div style={{ width: `${highPct}%`, height: '100%', background: 'var(--risk-high-solid)', borderRadius: '999px' }} />
               </div>
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '4px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '5px' }}>
                 <span style={{ color: 'var(--risk-moderate-text)', fontWeight: '700' }}>Moderate (Harassment / Dispute)</span>
                 <span style={{ color: 'var(--text-primary)', fontWeight: '700' }}>{stats.moderate} cases ({modPct}%)</span>
               </div>
-              <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '999px', overflow: 'hidden' }}>
-                <div style={{ width: `${modPct}%`, height: '100%', background: '#0ea5e9', borderRadius: '999px' }} />
+              <div style={{ height: '8px', background: 'var(--bg-surface)', borderRadius: '999px', overflow: 'hidden' }}>
+                <div style={{ width: `${modPct}%`, height: '100%', background: 'var(--risk-moderate-solid)', borderRadius: '999px' }} />
               </div>
             </div>
 
             <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '4px' }}>
-                <span style={{ color: '#10b981', fontWeight: '700' }}>Low (Administrative / Routine)</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '5px' }}>
+                <span style={{ color: 'var(--risk-low-text)', fontWeight: '700' }}>Low (Administrative / Routine)</span>
                 <span style={{ color: 'var(--text-primary)', fontWeight: '700' }}>{stats.low} cases ({lowPct}%)</span>
               </div>
-              <div style={{ height: '8px', background: 'rgba(255,255,255,0.06)', borderRadius: '999px', overflow: 'hidden' }}>
-                <div style={{ width: `${lowPct}%`, height: '100%', background: '#10b981', borderRadius: '999px' }} />
+              <div style={{ height: '8px', background: 'var(--bg-surface)', borderRadius: '999px', overflow: 'hidden' }}>
+                <div style={{ width: `${lowPct}%`, height: '100%', background: 'var(--risk-low-solid)', borderRadius: '999px' }} />
               </div>
             </div>
           </div>
         </div>
 
         {/* Language Distribution */}
-        <div className="glass-card" style={{ padding: '24px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '18px' }}>
-            <PieChart size={18} color="var(--accent-indigo)" />
-            <h3 style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+        <div className="glass-card" style={{ padding: '26px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+            <PieChart size={18} color="var(--primary-blue)" />
+            <h3 style={{ fontSize: '1.05rem', fontWeight: '800', color: 'var(--text-primary)' }}>
               Linguistic Breakdown (Scheduled Languages)
             </h3>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {Object.entries(stats.languageDistribution || {}).map(([lang, count]) => {
               const pct = Math.round((count / total) * 100);
               return (
                 <div key={lang}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '4px' }}>
-                    <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{lang}</span>
-                    <span style={{ color: 'var(--text-muted)' }}>{count} ({pct}%)</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.84rem', marginBottom: '5px' }}>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: '700' }}>{lang}</span>
+                    <span style={{ color: 'var(--text-muted)', fontWeight: '600' }}>{count} ({pct}%)</span>
                   </div>
-                  <div style={{ height: '6px', background: 'rgba(255,255,255,0.06)', borderRadius: '999px', overflow: 'hidden' }}>
-                    <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #06b6d4, #6366f1)', borderRadius: '999px' }} />
+                  <div style={{ height: '7px', background: 'var(--bg-surface)', borderRadius: '999px', overflow: 'hidden' }}>
+                    <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #2563eb, #38bdf8)', borderRadius: '999px' }} />
                   </div>
                 </div>
               );
