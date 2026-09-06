@@ -68,10 +68,15 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
       pdf.save(`NHAA_Complaint_Receipt_${ticketId}.pdf`);
     } catch (e) {
       console.error('PDF error:', e);
-      alert('Failed generating PDF: ' + e.message);
+      // Fallback to native window.print() if canvas generation has any issue
+      window.print();
     } finally {
       setIsGeneratingPdf(false);
     }
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
@@ -117,16 +122,26 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
             onClick={handleDownloadPdf}
             className="btn-primary"
             disabled={isGeneratingPdf}
-            style={{ padding: '12px 26px', fontSize: '0.96rem' }}
+            style={{ padding: '12px 24px', fontSize: '0.94rem' }}
           >
             <Download size={18} />
-            {isGeneratingPdf ? 'Generating PDF...' : 'Download Official FIR-Ready Report (PDF)'}
+            {isGeneratingPdf ? 'Generating PDF...' : 'Download FIR Receipt (PDF)'}
+          </button>
+
+          <button
+            onClick={handlePrint}
+            className="btn-secondary"
+            style={{ padding: '12px 22px', fontSize: '0.94rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+            title="Print or Save as PDF with browser print dialog"
+          >
+            <Printer size={18} />
+            <span>Print / Save as PDF</span>
           </button>
 
           <button
             onClick={() => onGoToTracker(ticketId)}
             className="btn-secondary"
-            style={{ padding: '12px 26px', fontSize: '0.96rem' }}
+            style={{ padding: '12px 24px', fontSize: '0.94rem' }}
           >
             <span>Track Status in Real-Time</span>
             <ArrowRight size={18} />
@@ -206,16 +221,40 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
         </div>
       </div>
 
-      {/* Hidden Offscreen Printable A4 Receipt for 100% Crisp Unicode / Indic PDF Generation */}
-      <div style={{ position: 'fixed', left: '-9999px', top: 0, width: '794px', zIndex: -100, pointerEvents: 'none' }}>
+      {/* Visible Official Grievance Docket & Legal Receipt */}
+      <div className="no-print" style={{ margin: '32px 0 16px 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+        <div>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+            Official Grievance Docket & Legal Receipt Preview
+          </h3>
+          <p style={{ fontSize: '0.84rem', color: 'var(--text-secondary)' }}>
+            Official FIR-ready legal acknowledgment docket. Verify details below or export as PDF.
+          </p>
+        </div>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button onClick={handleDownloadPdf} className="btn-primary" style={{ padding: '8px 16px', fontSize: '0.85rem' }} disabled={isGeneratingPdf}>
+            <Download size={15} /> {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
+          </button>
+          <button onClick={handlePrint} className="btn-secondary" style={{ padding: '8px 16px', fontSize: '0.85rem' }}>
+            <Printer size={15} /> Print
+          </button>
+        </div>
+      </div>
+
+      <div style={{ overflowX: 'auto', marginBottom: '40px', paddingBottom: '10px' }}>
         <div
           ref={receiptRef}
+          className="printable-receipt"
           style={{
-            width: '794px',
+            maxWidth: '820px',
+            margin: '0 auto',
             backgroundColor: '#ffffff',
             color: '#0f172a',
             fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
             padding: '36px 40px',
+            borderRadius: '12px',
+            border: '1px solid #cbd5e1',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.3)',
             boxSizing: 'border-box'
           }}
         >
