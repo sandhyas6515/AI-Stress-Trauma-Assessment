@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { User, Menu, X, Sun, Moon, Mic, Search, ShieldAlert, BarChart3, ShieldCheck } from 'lucide-react';
+import { User, Menu, X, Sun, Moon, Mic, Search, ShieldAlert, BarChart3, ShieldCheck, MessageSquare } from 'lucide-react';
 import AshokaEmblem from './components/AshokaEmblem';
 import VoiceRecorder from './components/VoiceRecorder';
+import ChatComplaint from './components/ChatComplaint';
 import ComplaintReview from './components/ComplaintReview';
 import SubmissionSuccess from './components/SubmissionSuccess';
 import ComplaintTracker from './components/ComplaintTracker';
@@ -170,6 +171,26 @@ export default function App() {
           </div>
 
           <div
+            id="menu-chat-mode-btn"
+            onClick={() => navigateTab('chat')}
+            style={{
+              padding: '10px 12px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              fontSize: '0.88rem',
+              fontWeight: '600',
+              color: activeTab === 'chat' ? 'var(--accent-blue)' : 'var(--text-primary)',
+              background: activeTab === 'chat' ? 'var(--accent-blue-subtle)' : 'transparent'
+            }}
+          >
+            <MessageSquare size={16} />
+            <span>Silent Chat Grievance</span>
+          </div>
+
+          <div
             onClick={() => navigateTab('track')}
             style={{
               padding: '10px 12px',
@@ -255,6 +276,14 @@ export default function App() {
             onProceedToReview={handleProceedToReview}
             onNavigateTab={navigateTab}
             demoScenarios={demoScenarios}
+            theme={theme}
+          />
+        )}
+
+        {activeTab === 'chat' && (
+          <ChatComplaint
+            onProceedToReview={handleProceedToReview}
+            onBack={() => setActiveTab('record')}
             theme={theme}
           />
         )}

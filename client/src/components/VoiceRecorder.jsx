@@ -221,10 +221,57 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
   return (
     <div className="animate-fade-in" style={{ position: 'relative', maxWidth: '1000px', margin: '0 auto', minHeight: '620px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
       
-      {/* Top Language Pill & Demo Toggle */}
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card)', padding: '5px 14px', borderRadius: '9999px', border: '1px solid var(--border-color)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          <span>Language / भाषा:</span>
+      {/* Top Controls: Mode Switcher (Voice / Chat) + Language Pill */}
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
+        
+        {/* Mode Toggle: Voice vs Chat */}
+        <div style={{ display: 'flex', background: 'var(--bg-card)', padding: '3px', borderRadius: '9999px', border: '1px solid var(--border-color)' }}>
+          <button
+            style={{
+              background: 'var(--accent-blue)',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '9999px',
+              padding: '5px 14px',
+              fontSize: '0.78rem',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'default'
+            }}
+          >
+            <Mic size={13} />
+            <span>Voice Mode</span>
+          </button>
+          
+          <button
+            id="switch-to-chat-mode-btn"
+            onClick={() => onNavigateTab('chat')}
+            style={{
+              background: 'transparent',
+              color: 'var(--text-secondary)',
+              border: 'none',
+              borderRadius: '9999px',
+              padding: '5px 14px',
+              fontSize: '0.78rem',
+              fontWeight: '600',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              cursor: 'pointer',
+              transition: 'color 0.2s'
+            }}
+            title="Switch to Silent / Discrete Chat Mode"
+          >
+            <MessageSquare size={13} />
+            <span>Silent Chat Mode</span>
+          </button>
+        </div>
+
+        {/* Language Selector */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card)', padding: '5px 14px', borderRadius: '9999px', border: '1px solid var(--border-color)', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+          <span>Language:</span>
           <select
             value={selectedLanguage}
             onChange={(e) => setSelectedLanguage(e.target.value)}
@@ -236,7 +283,7 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
               fontWeight: '700',
               cursor: 'pointer',
               outline: 'none',
-              fontSize: '0.82rem'
+              fontSize: '0.8rem'
             }}
           >
             {SUPPORTED_LANGUAGES.map(l => (
@@ -247,6 +294,7 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
           </select>
         </div>
 
+        {/* Demo Toggle */}
         <button
           onClick={() => setShowDemos(!showDemos)}
           style={{
@@ -254,7 +302,7 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
             border: '1px solid var(--border-color)',
             borderRadius: '9999px',
             padding: '5px 14px',
-            fontSize: '0.8rem',
+            fontSize: '0.78rem',
             color: 'var(--accent-blue)',
             cursor: 'pointer',
             display: 'flex',
@@ -263,7 +311,7 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
             fontWeight: '600'
           }}
         >
-          <Sparkles size={13} />
+          <Sparkles size={12} />
           <span>{showDemos ? 'Hide Samples' : 'Test Samples'}</span>
         </button>
       </div>
