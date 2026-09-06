@@ -1,93 +1,87 @@
+/* Exact design system matching user reference screenshot */
 :root {
-  /* Dark Mode Default (Institutional Obsidian / Midnight Slate) */
-  --bg-main: #0a0e17;
-  --bg-card: rgba(18, 24, 39, 0.78);
-  --bg-card-hover: rgba(30, 41, 59, 0.88);
-  --bg-surface: #111827;
-  --bg-surface-subtle: rgba(255, 255, 255, 0.03);
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-focus: #3b82f6;
+  /* Default: Dark Theme (Right side of screenshot) */
+  --bg-main: #0c1322;
+  --bg-card: #131c2e;
+  --bg-card-subtle: #172238;
+  --bg-surface: #0f182a;
+  --bg-input: #10192a;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(76, 123, 244, 0.4);
 
-  --text-primary: #f8fafc;
+  --text-primary: #ffffff;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
 
-  --primary-blue: #2563eb;
-  --primary-blue-hover: #1d4ed8;
-  --accent-saffron: #f59e0b;
-  --accent-emerald: #10b981;
+  --accent-blue: #4c7bf4;
+  --accent-blue-hover: #3b68e5;
+  --accent-blue-subtle: rgba(76, 123, 244, 0.15);
+  --accent-halo: rgba(76, 123, 244, 0.22);
+  --accent-halo-outer: rgba(76, 123, 244, 0.08);
 
-  /* Risk Category Palette - Refined Institutional Colors */
-  --risk-critical-bg: rgba(225, 29, 72, 0.14);
-  --risk-critical-border: rgba(225, 29, 72, 0.4);
-  --risk-critical-text: #fb7185;
-  --risk-critical-solid: #e11d48;
+  --silhouette-color: #131d2e;
 
-  --risk-high-bg: rgba(217, 119, 6, 0.14);
-  --risk-high-border: rgba(217, 119, 6, 0.4);
+  /* Risk Severity Accents */
+  --risk-critical-bg: rgba(239, 68, 68, 0.16);
+  --risk-critical-border: rgba(239, 68, 68, 0.45);
+  --risk-critical-text: #f87171;
+
+  --risk-high-bg: rgba(245, 158, 11, 0.16);
+  --risk-high-border: rgba(245, 158, 11, 0.45);
   --risk-high-text: #fbbf24;
-  --risk-high-solid: #d97706;
 
-  --risk-moderate-bg: rgba(37, 99, 235, 0.14);
-  --risk-moderate-border: rgba(37, 99, 235, 0.4);
-  --risk-moderate-text: #60a5fa;
-  --risk-moderate-solid: #2563eb;
+  --risk-moderate-bg: rgba(76, 123, 244, 0.16);
+  --risk-moderate-border: rgba(76, 123, 244, 0.45);
+  --risk-moderate-text: #93c5fd;
 
-  --risk-low-bg: rgba(5, 150, 105, 0.14);
-  --risk-low-border: rgba(5, 150, 105, 0.4);
+  --risk-low-bg: rgba(16, 185, 129, 0.16);
+  --risk-low-border: rgba(16, 185, 129, 0.45);
   --risk-low-text: #34d399;
-  --risk-low-solid: #059669;
 
-  --radius-xs: 6px;
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-full: 9999px;
-
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 8px 24px -4px rgba(0, 0, 0, 0.35);
-  --shadow-lg: 0 20px 40px -8px rgba(0, 0, 0, 0.5);
-  --shadow-primary: 0 4px 20px rgba(37, 99, 235, 0.35);
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --shadow-mic: 0 10px 40px rgba(76, 123, 244, 0.35);
 }
 
 [data-theme="light"] {
-  --bg-main: #f4f6fb;
-  --bg-card: rgba(255, 255, 255, 0.92);
-  --bg-card-hover: rgba(255, 255, 255, 1);
+  /* Light Theme (Left side of screenshot) */
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-subtle: #f1f5f9;
   --bg-surface: #ffffff;
-  --bg-surface-subtle: #f8fafc;
-  --border-glass: #e2e8f0;
-  --border-focus: #2563eb;
+  --bg-input: #f8fafc;
+  --border-color: #e2e8f0;
+  --border-hover: #93c5fd;
 
   --text-primary: #0f172a;
-  --text-secondary: #475569;
+  --text-secondary: #64748b;
   --text-muted: #94a3b8;
 
-  --primary-blue: #1d4ed8;
-  --primary-blue-hover: #1e40af;
-  --accent-saffron: #d97706;
-  --accent-emerald: #059669;
+  --accent-blue: #4c7bf4;
+  --accent-blue-hover: #3b68e5;
+  --accent-blue-subtle: #eff6ff;
+  --accent-halo: rgba(76, 123, 244, 0.18);
+  --accent-halo-outer: rgba(76, 123, 244, 0.06);
 
-  --risk-critical-bg: #ffe4e6;
-  --risk-critical-border: #f43f5e;
-  --risk-critical-text: #be123c;
+  --silhouette-color: #e9eef5;
 
-  --risk-high-bg: #fef3c7;
-  --risk-high-border: #f59e0b;
-  --risk-high-text: #b45309;
+  --risk-critical-bg: #fef2f2;
+  --risk-critical-border: #fca5a5;
+  --risk-critical-text: #dc2626;
 
-  --risk-moderate-bg: #dbeafe;
-  --risk-moderate-border: #3b82f6;
-  --risk-moderate-text: #1d4ed8;
+  --risk-high-bg: #fffbeb;
+  --risk-high-border: #fde68a;
+  --risk-high-text: #d97706;
 
-  --risk-low-bg: #d1fae5;
-  --risk-low-border: #10b981;
-  --risk-low-text: #047857;
+  --risk-moderate-bg: #eff6ff;
+  --risk-moderate-border: #bfdbfe;
+  --risk-moderate-text: #2563eb;
 
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 20px 35px -8px rgba(0, 0, 0, 0.12);
-  --shadow-primary: 0 4px 18px rgba(37, 99, 235, 0.25);
+  --risk-low-bg: #ecfdf5;
+  --risk-low-border: #a7f3d0;
+  --risk-low-text: #059669;
+
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.05);
+  --shadow-mic: 0 10px 35px rgba(76, 123, 244, 0.25);
 }
 
 * {
@@ -98,147 +92,159 @@
 
 body {
   background-color: var(--bg-main);
-  background-image: 
-    radial-gradient(at 10% 10%, rgba(37, 99, 235, 0.07) 0px, transparent 55%),
-    radial-gradient(at 90% 10%, rgba(245, 158, 11, 0.05) 0px, transparent 55%),
-    radial-gradient(at 50% 95%, rgba(16, 185, 129, 0.05) 0px, transparent 55%);
-  background-attachment: fixed;
   color: var(--text-primary);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-h1, h2, h3, h4, .font-heading {
+h1, h2, h3, h4 {
   font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
 }
 
-/* Indian National Tricolor Ribbon Header Accent */
-.tricolor-ribbon {
-  height: 3px;
-  width: 100%;
-  background: linear-gradient(90deg, #ff9933 0%, #ff9933 33.3%, #ffffff 33.3%, #ffffff 66.6%, #138808 66.6%, #138808 100%);
+/* Glass & Card Styles */
+.exact-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s ease;
 }
 
-/* Scrollbars */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: var(--bg-main);
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
-  border-radius: var(--radius-full);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.5);
+/* Mic Button Radial Halo matching screenshot */
+.mic-halo-container {
+  position: relative;
+  width: 170px;
+  height: 170px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-/* Glassmorphism Card Utility */
-.glass-card {
+.mic-outer-ring {
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  border-radius: 50%;
+  background-color: var(--accent-halo-outer);
+  transition: all 0.3s ease;
+}
+
+.mic-middle-ring {
+  position: absolute;
+  width: 136px;
+  height: 136px;
+  border-radius: 50%;
+  background-color: var(--accent-halo);
+  transition: all 0.3s ease;
+}
+
+.mic-core-btn {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  border: none;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-mic);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease;
+  z-index: 2;
+}
+
+.mic-core-btn:hover {
+  transform: scale(1.06);
+  background: var(--accent-blue-hover);
+}
+
+.mic-core-btn:active {
+  transform: scale(0.96);
+}
+
+/* Recording State Pulse */
+.recording-active .mic-core-btn {
+  background: #e11d48;
+  animation: rec-pulse 1.8s infinite;
+}
+
+.recording-active .mic-middle-ring {
+  background-color: rgba(225, 29, 72, 0.25);
+  animation: ring-pulse 1.8s infinite;
+}
+
+.recording-active .mic-outer-ring {
+  background-color: rgba(225, 29, 72, 0.1);
+}
+
+@keyframes rec-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes ring-pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.12); opacity: 0.4; }
+  100% { transform: scale(1); opacity: 0.8; }
+}
+
+/* Buttons */
+.btn-primary {
+  background: var(--accent-blue);
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: var(--accent-blue-hover);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
   background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-glass);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.2s ease;
-}
-
-.glass-card-interactive {
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-}
-
-.glass-card-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
-  border-color: rgba(37, 99, 235, 0.4);
-}
-
-/* Tactile Voice Mic Button */
-.mic-btn-idle {
-  width: 110px;
-  height: 110px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-  border: 3px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 10px 30px rgba(37, 99, 235, 0.45);
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #ffffff;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 8px;
+  transition: all 0.2s ease;
 }
 
-.mic-btn-idle:hover {
-  transform: scale(1.05);
-  box-shadow: 0 14px 40px rgba(37, 99, 235, 0.6);
+.btn-secondary:hover {
+  background: var(--bg-card-subtle);
+  border-color: var(--border-hover);
 }
 
-.mic-btn-recording {
-  width: 110px;
-  height: 110px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
-  border: 3px solid rgba(255, 255, 255, 0.35);
-  box-shadow: 0 10px 35px rgba(225, 29, 72, 0.5);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #ffffff;
-  animation: mic-pulse 2s infinite;
-}
-
-@keyframes mic-pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.65);
-    transform: scale(1);
-  }
-  50% {
-    box-shadow: 0 0 0 22px rgba(225, 29, 72, 0);
-    transform: scale(1.03);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(225, 29, 72, 0);
-    transform: scale(1);
-  }
-}
-
-/* Critical Alert Pulse */
-@keyframes critical-glow {
-  0%, 100% {
-    border-color: rgba(225, 29, 72, 0.7);
-    box-shadow: 0 0 18px rgba(225, 29, 72, 0.3);
-  }
-  50% {
-    border-color: rgba(225, 29, 72, 0.25);
-    box-shadow: 0 0 6px rgba(225, 29, 72, 0.08);
-  }
-}
-
-.critical-pulse-box {
-  animation: critical-glow 2.2s infinite;
-}
-
-/* Status & Risk Badges */
+/* Status Pills */
 .status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 11px;
-  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  border-radius: 9999px;
   font-size: 0.75rem;
   font-weight: 700;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
 }
 
 .badge-critical {
@@ -246,89 +252,45 @@ h1, h2, h3, h4, .font-heading {
   border: 1px solid var(--risk-critical-border);
   color: var(--risk-critical-text);
 }
+
 .badge-high {
   background: var(--risk-high-bg);
   border: 1px solid var(--risk-high-border);
   color: var(--risk-high-text);
 }
+
 .badge-moderate {
   background: var(--risk-moderate-bg);
   border: 1px solid var(--risk-moderate-border);
   color: var(--risk-moderate-text);
 }
+
 .badge-low {
   background: var(--risk-low-bg);
   border: 1px solid var(--risk-low-border);
   color: var(--risk-low-text);
 }
 
-/* Clean Buttons */
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary-blue) 0%, #1e40af 100%);
-  color: #ffffff;
-  border: none;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  padding: 10px 20px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: var(--shadow-sm);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, var(--primary-blue-hover) 0%, #172554 100%);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-primary);
-}
-
-.btn-secondary {
-  background: var(--bg-surface-subtle);
-  border: 1px solid var(--border-glass);
+/* Inputs */
+input, textarea, select {
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-color);
   color: var(--text-primary);
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  padding: 10px 18px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
 }
 
-.btn-secondary:hover {
-  background: var(--bg-card-hover);
-  border-color: rgba(148, 163, 184, 0.4);
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
-  color: #ffffff;
-  border: none;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  padding: 10px 18px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.35);
-}
-
-.btn-danger:hover {
-  background: linear-gradient(135deg, #be123c 0%, #9f1239 100%);
-  box-shadow: 0 6px 18px rgba(225, 29, 72, 0.5);
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent-blue);
 }
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .animate-fade-in {
-  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeIn 0.25s ease-out forwards;
 }
