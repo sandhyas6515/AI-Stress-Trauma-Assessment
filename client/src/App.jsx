@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User, Menu, X, Sun, Moon, Mic, Search, ShieldAlert, BarChart3, ShieldCheck, MessageSquare } from 'lucide-react';
+import { User, Menu, X, Sun, Moon, Mic, Search, ShieldAlert, BarChart3, ShieldCheck, MessageSquare, LogOut } from 'lucide-react';
 import AshokaEmblem from './components/AshokaEmblem';
 import VoiceRecorder from './components/VoiceRecorder';
 import ChatComplaint from './components/ChatComplaint';
@@ -8,6 +8,8 @@ import SubmissionSuccess from './components/SubmissionSuccess';
 import ComplaintTracker from './components/ComplaintTracker';
 import OfficialDashboard from './components/OfficialDashboard';
 import AnalyticsPanel from './components/AnalyticsPanel';
+import OfficialLogin from './components/OfficialLogin';
+import useOfficialAuth from './hooks/useOfficialAuth';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('record'); // 'record' | 'review' | 'submitted' | 'track' | 'official' | 'analytics'
@@ -17,6 +19,9 @@ export default function App() {
   const [demoScenarios, setDemoScenarios] = useState([]);
   const [theme, setTheme] = useState('dark');
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // Official auth state
+  const { officialUser, token, isAuthenticated, isLoading: authLoading, login, logout } = useOfficialAuth();
 
   // Set theme attribute on html/body
   useEffect(() => {
@@ -94,24 +99,30 @@ export default function App() {
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          {/* User Profile Icon matching Screenshot */}
+          {/* User Profile / Auth Status Icon */}
           <div
-            onClick={() => alert('Official Citizen / Complainant Session Active')}
+            onClick={() => {
+              if (isAuthenticated) {
+                alert(`Logged in as: ${officialUser?.name || officialUser?.email}`);
+              } else {
+                alert('Official Citizen / Complainant Session Active');
+              }
+            }}
             style={{
               width: '36px',
               height: '36px',
               borderRadius: '50%',
-              border: '1px solid var(--border-color)',
+              border: `1px solid ${isAuthenticated ? 'var(--accent-emerald)' : 'var(--border-color)'}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'var(--text-secondary)',
+              color: isAuthenticated ? 'var(--accent-emerald)' : 'var(--text-secondary)',
               cursor: 'pointer',
               background: 'var(--bg-card)'
             }}
-            title="User Profile"
+            title={isAuthenticated ? `Signed in: ${officialUser?.name}` : 'User Profile'}
           >
-            <User size={18} />
+            {isAuthenticated ? <ShieldCheck size={18} /> : <User size={18} />}
           </div>
 
           {/* Hamburger Menu Icon matching Screenshot */}
@@ -249,6 +260,30 @@ export default function App() {
 
           <div style={{ height: '1px', background: 'var(--border-color)', margin: '8px 0' }} />
 
+          {/* Logout option — only visible when authenticated */}
+          {isAuthenticated && (
+            <div
+              onClick={() => {
+                logout();
+                navigateTab('record');
+              }}
+              style={{
+                padding: '10px 12px',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                fontSize: '0.86rem',
+                color: 'var(--risk-critical-text)',
+                fontWeight: '600'
+              }}
+            >
+              <LogOut size={16} />
+              <span>Sign Out ({officialUser?.email})</span>
+            </div>
+          )}
+
           <div
             onClick={toggleTheme}
             style={{
@@ -308,11 +343,19 @@ export default function App() {
         )}
 
         {activeTab === 'official' && (
-          <OfficialDashboard />
+          isAuthenticated ? (
+            <OfficialDashboard token={token} onAuthError={logout} />
+          ) : (
+            <OfficialLogin onLoginSuccess={login} />
+          )
         )}
 
         {activeTab === 'analytics' && (
-          <AnalyticsPanel />
+          isAuthenticated ? (
+            <AnalyticsPanel token={token} onAuthError={logout} />
+          ) : (
+            <OfficialLogin onLoginSuccess={login} />
+          )
         )}
 
       </main>

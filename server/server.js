@@ -6,6 +6,7 @@ import { extractEntitiesAndAnalyzeText } from './services/nlpService.js';
 import { computeFusedRisk } from './services/fusedRiskService.js';
 import { complaintsStore } from './data/complaintsStore.js';
 import { demoScenarios } from './data/demoScenarios.js';
+import { authenticateOfficial, generateToken, requireOfficialAuth } from './middleware/authMiddleware.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -230,10 +231,108 @@ app.post('/api/voice/process', upload.single('audio'), (req, res) => {
 });
 
 /**
+ * POST /api/official/login
+ * Authenticate an official and return a JWT token.
+ * Public endpoint — but only valid officials can get a token.
+ */
+app.post('/api/official/login', (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email and password are required.'
+      });
+    }
+
+    const official = authenticateOfficial(email, password);
+    if (!official) {
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid credentials. Access denied.'
+      });
+    }
+
+    const token = generateToken(official);
+    res.json({
+      success: true,
+      token,
+      official: {
+        email: official.email,
+        name: official.name,
+        role: official.role
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error.' });
+  }
+});
+
+/**
+ * GET /api/official/me
+ * Return the authenticated official's profile.
+ * Used by the frontend to verify auth state on page load.
+ */
+app.get('/api/official/me', requireOfficialAuth, (req, res) => {
+  res.json({
+    success: true,
+    official: req.official
+  });
+});
+
+/**
+ * POST /api/track-complaint
+ * Victim-facing: lookup complaint by ticketId + phone (no login required).
+ * Returns ONLY safe fields — never risk scores, transcripts, or accused details.
+ */
+app.post('/api/track-complaint', (req, res) => {
+  try {
+    const { ticketId, phone } = req.body;
+
+    if (!ticketId || !phone) {
+      return res.status(400).json({
+        success: false,
+        error: 'Ticket ID and registered phone number are required.'
+      });
+    }
+
+    const complaint = complaintsStore.getByTicketAndPhone(ticketId, phone);
+
+    if (!complaint) {
+      // Generic error — do not reveal whether ticketId exists
+      return res.status(404).json({
+        success: false,
+        error: 'No matching complaint found. Please verify your Ticket ID and registered phone number.'
+      });
+    }
+
+    // Return ONLY safe, victim-appropriate fields
+    const lastLog = complaint.actionLogs?.[complaint.actionLogs.length - 1];
+    res.json({
+      success: true,
+      data: {
+        ticketId: complaint.ticketId,
+        status: complaint.status,
+        lastUpdated: lastLog?.timestamp || complaint.createdAt,
+        assignedOfficer: complaint.assignedOfficer || null,
+        officerMessage: lastLog?.action || null,
+        createdAt: complaint.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Track complaint error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error.' });
+  }
+});
+
+/**
  * GET /api/complaints
+ * PROTECTED — Officials only.
  * Fetch complaints queue, default sorted by Risk Severity (Critical on top)
  */
-app.get('/api/complaints', (req, res) => {
+app.get('/api/complaints', requireOfficialAuth, (req, res) => {
   try {
     const { riskLevel, status, search } = req.query;
     const complaints = complaintsStore.getAll({ riskLevel, status, search });
@@ -264,9 +363,10 @@ app.post('/api/complaints', (req, res) => {
 
 /**
  * GET /api/complaints/:id
+ * PROTECTED — Officials only.
  * Retrieve complaint details by Ticket ID
  */
-app.get('/api/complaints/:id', (req, res) => {
+app.get('/api/complaints/:id', requireOfficialAuth, (req, res) => {
   try {
     const ticketId = req.params.id;
     const complaint = complaintsStore.getById(ticketId);
@@ -281,9 +381,10 @@ app.get('/api/complaints/:id', (req, res) => {
 
 /**
  * PATCH /api/complaints/:id
+ * PROTECTED — Officials only.
  * Update status, assign officer, or log officer notes
  */
-app.patch('/api/complaints/:id', (req, res) => {
+app.patch('/api/complaints/:id', requireOfficialAuth, (req, res) => {
   try {
     const ticketId = req.params.id;
     const updates = req.body;
@@ -299,9 +400,10 @@ app.patch('/api/complaints/:id', (req, res) => {
 
 /**
  * GET /api/analytics
+ * PROTECTED — Officials only.
  * Real-time operational intelligence for Official Dashboard
  */
-app.get('/api/analytics', (req, res) => {
+app.get('/api/analytics', requireOfficialAuth, (req, res) => {
   try {
     const stats = complaintsStore.getAnalytics();
     res.json({ success: true, data: stats });

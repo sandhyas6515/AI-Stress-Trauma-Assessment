@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, PieChart, ShieldAlert, Globe2, Clock, CheckCircle2, TrendingUp, ShieldCheck } from 'lucide-react';
 
-export default function AnalyticsPanel() {
+export default function AnalyticsPanel({ token, onAuthError }) {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -13,7 +13,13 @@ export default function AnalyticsPanel() {
 
   const fetchStats = async () => {
     try {
-      const res = await fetch('/api/analytics');
+      const res = await fetch('/api/analytics', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401 || res.status === 403) {
+        onAuthError?.();
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setStats(data.data);

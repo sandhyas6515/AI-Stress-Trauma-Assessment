@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, AlertTriangle, Filter, Search, Eye, EyeOff, CheckCircle, Clock, User, Phone, MapPin, Activity, ChevronRight, X, Send, Ambulance, PhoneCall, FileText, ShieldCheck } from 'lucide-react';
 
-export default function OfficialDashboard() {
+export default function OfficialDashboard({ token, onAuthError }) {
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedCase, setSelectedCase] = useState(null);
@@ -23,7 +23,13 @@ export default function OfficialDashboard() {
 
   const fetchComplaints = async () => {
     try {
-      const res = await fetch('/api/complaints');
+      const res = await fetch('/api/complaints', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401 || res.status === 403) {
+        onAuthError?.();
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setComplaints(data.data);
@@ -50,7 +56,10 @@ export default function OfficialDashboard() {
     try {
       const res = await fetch(`/api/complaints/${selectedCase.ticketId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
           status: targetStatus,
           officerName: 'Duty Nodal Officer (Atrocity Cell)',

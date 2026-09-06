@@ -7,6 +7,7 @@
 let complaints = [
   {
     ticketId: "NHAA-2026-849201",
+    victimPhone: "+919876543210",
     createdAt: new Date(Date.now() - 1000 * 60 * 18).toISOString(), // 18 mins ago
     language: "hi",
     languageName: "Hindi (हिंदी)",
@@ -115,6 +116,7 @@ let complaints = [
   },
   {
     ticketId: "NHAA-2026-673194",
+    victimPhone: "+919765432109",
     createdAt: new Date(Date.now() - 1000 * 60 * 85).toISOString(), // 85 mins ago
     language: "mr",
     languageName: "Marathi (मराठी)",
@@ -206,6 +208,7 @@ let complaints = [
   },
   {
     ticketId: "NHAA-2026-451892",
+    victimPhone: "+919840123456",
     createdAt: new Date(Date.now() - 1000 * 60 * 240).toISOString(), // 4 hours ago
     language: "en",
     languageName: "English",
@@ -301,6 +304,7 @@ let complaints = [
   },
   {
     ticketId: "NHAA-2026-192834",
+    victimPhone: "+919444098765",
     createdAt: new Date(Date.now() - 1000 * 60 * 600).toISOString(), // 10 hours ago
     language: "en",
     languageName: "English",
@@ -424,12 +428,38 @@ export const complaintsStore = {
     return complaints.find(c => c.ticketId.toUpperCase() === ticketId.toUpperCase());
   },
 
+  /**
+   * Secure lookup by ticketId AND phone together.
+   * Returns the complaint only if BOTH match. Returns null otherwise
+   * (does not reveal whether the ticketId exists without the correct phone).
+   */
+  getByTicketAndPhone: (ticketId, phone) => {
+    if (!ticketId || !phone) return null;
+
+    const normalizedInput = phone.replace(/[\s\-()]/g, '');
+    const complaint = complaints.find(
+      c => c.ticketId.toUpperCase() === ticketId.toUpperCase()
+    );
+
+    if (!complaint) return null;
+
+    // Compare normalized phone numbers
+    if (complaint.victimPhone !== normalizedInput) return null;
+
+    return complaint;
+  },
+
   create: (data) => {
     const randomNum = Math.floor(100000 + Math.random() * 900000);
     const ticketId = `NHAA-2026-${randomNum}`;
 
+    // Normalize and store victim phone for secure lookup
+    const rawPhone = data.victim?.phone || '+91 99999 00000';
+    const normalizedPhone = rawPhone.replace(/[\s\-()]/g, '');
+
     const newComplaint = {
       ticketId,
+      victimPhone: normalizedPhone,
       createdAt: new Date().toISOString(),
       language: data.language || 'en',
       languageName: data.languageName || 'English',

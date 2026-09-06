@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, CheckCircle2, Clock, AlertCircle, ShieldCheck, UserCheck, FileText, ArrowRight, Shield } from 'lucide-react';
+import { Search, CheckCircle2, Clock, AlertCircle, ShieldCheck, UserCheck, Phone, Shield } from 'lucide-react';
 
 const STAGES = [
   { id: 'Submitted', label: 'Submitted', desc: 'Voice testimony logged & trauma-triaged' },
@@ -11,6 +11,7 @@ const STAGES = [
 
 export default function ComplaintTracker({ initialTicketId = '' }) {
   const [ticketQuery, setTicketQuery] = useState(initialTicketId);
+  const [phoneQuery, setPhoneQuery] = useState('');
   const [complaint, setComplaint] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -18,21 +19,31 @@ export default function ComplaintTracker({ initialTicketId = '' }) {
   useEffect(() => {
     if (initialTicketId) {
       setTicketQuery(initialTicketId);
-      fetchComplaint(initialTicketId);
     }
   }, [initialTicketId]);
 
-  const fetchComplaint = async (tId) => {
-    if (!tId.trim()) return;
+  /**
+   * Secure victim tracking: POST /api/track-complaint with ticketId + phone.
+   * Returns only safe fields — no risk scores, transcripts, or accused info.
+   */
+  const fetchComplaint = async (tId, phone) => {
+    if (!tId.trim() || !phone.trim()) {
+      setError('Please enter both your Ticket ID and registered phone number.');
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/complaints/${encodeURIComponent(tId.trim())}`);
+      const res = await fetch('/api/track-complaint', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticketId: tId.trim(), phone: phone.trim() })
+      });
       const data = await res.json();
       if (data.success) {
         setComplaint(data.data);
       } else {
-        setError(data.error || 'Ticket not found');
+        setError(data.error || 'No matching complaint found.');
         setComplaint(null);
       }
     } catch (err) {
@@ -44,7 +55,7 @@ export default function ComplaintTracker({ initialTicketId = '' }) {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    fetchComplaint(ticketQuery);
+    fetchComplaint(ticketQuery, phoneQuery);
   };
 
   const getStageIndex = (status) => {
@@ -63,15 +74,35 @@ export default function ComplaintTracker({ initialTicketId = '' }) {
           Track Grievance Docket & Inquiry Progress
         </h2>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '22px' }}>
-          Enter your official NHAA Ticket ID to inspect real-time statutory progress, assigned investigating officers, and ground protection directives.
+          Enter your official NHAA Ticket ID and registered phone number to check your complaint status and assigned officer updates.
         </p>
 
-        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '12px', maxWidth: '600px' }}>
-          <div style={{ position: 'relative', flex: 1 }}>
+        {/* Security Info */}
+        <div style={{
+          background: 'var(--bg-surface-subtle)',
+          border: '1px solid var(--border-glass)',
+          borderRadius: 'var(--radius-xs)',
+          padding: '10px 14px',
+          marginBottom: '20px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
+        }}>
+          <Shield size={15} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+            <strong style={{ color: 'var(--text-primary)' }}>Privacy Protected:</strong> Your phone number is verified against the complaint record. No data is shared without verification.
+          </span>
+        </div>
+
+        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '600px' }}>
+          
+          {/* Ticket ID Input */}
+          <div style={{ position: 'relative' }}>
             <Search size={18} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '13px' }} />
             <input
+              id="tracker-ticket-id"
               type="text"
-              placeholder="e.g. NHAA-2026-849201"
+              placeholder="Ticket ID (e.g. NHAA-2026-849201)"
               value={ticketQuery}
               onChange={(e) => setTicketQuery(e.target.value)}
               style={{
@@ -87,9 +118,34 @@ export default function ComplaintTracker({ initialTicketId = '' }) {
               }}
             />
           </div>
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Searching...' : 'Search Docket'}
-          </button>
+
+          {/* Phone Number Input */}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Phone size={16} color="var(--text-muted)" style={{ position: 'absolute', left: '14px', top: '13px' }} />
+              <input
+                id="tracker-phone"
+                type="tel"
+                placeholder="Registered Phone (e.g. +91 98765 43210)"
+                value={phoneQuery}
+                onChange={(e) => setPhoneQuery(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '11px 14px 11px 40px',
+                  borderRadius: 'var(--radius-xs)',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-glass)',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem',
+                  outline: 'none',
+                  fontWeight: '600'
+                }}
+              />
+            </div>
+            <button type="submit" className="btn-primary" disabled={loading} style={{ whiteSpace: 'nowrap' }}>
+              {loading ? 'Verifying...' : 'Search Docket'}
+            </button>
+          </div>
         </form>
 
         {error && (
@@ -99,7 +155,7 @@ export default function ComplaintTracker({ initialTicketId = '' }) {
         )}
       </div>
 
-      {/* Complaint Detail & Progress Stepper */}
+      {/* Complaint Status Display — ONLY safe fields */}
       {complaint && (
         <div className="glass-card" style={{ padding: '34px' }}>
           {/* Header Row */}
@@ -120,9 +176,7 @@ export default function ComplaintTracker({ initialTicketId = '' }) {
               <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>
                 CURRENT STAGE
               </div>
-              <span className={`status-pill ${
-                complaint.riskAssessment?.riskLevel === 'Critical' ? 'badge-critical' : 'badge-high'
-              }`} style={{ fontSize: '0.86rem', marginTop: '6px' }}>
+              <span className="status-pill badge-high" style={{ fontSize: '0.86rem', marginTop: '6px' }}>
                 {complaint.status}
               </span>
             </div>
@@ -170,7 +224,7 @@ export default function ComplaintTracker({ initialTicketId = '' }) {
             </div>
           </div>
 
-          {/* Assigned Officer & Details */}
+          {/* Assigned Officer & Last Update — safe fields only */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px', marginBottom: '28px' }}>
             <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-sm)', padding: '18px', border: '1px solid var(--border-glass)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -182,63 +236,54 @@ export default function ComplaintTracker({ initialTicketId = '' }) {
               <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)' }}>
                 {complaint.assignedOfficer || 'Auto-Allocated to District Atrocity Cell'}
               </div>
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                Jurisdiction: {complaint.entities?.location || 'District Mirzapur'}
-              </div>
             </div>
 
             <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-sm)', padding: '18px', border: '1px solid var(--border-glass)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <ShieldCheck size={18} color="var(--primary-blue)" />
+                <Clock size={18} color="var(--primary-blue)" />
                 <span style={{ fontSize: '0.76rem', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
-                  Safety & Support Directives
+                  Last Updated
                 </span>
               </div>
-              <div style={{ fontSize: '0.88rem', color: 'var(--text-primary)', fontWeight: '600' }}>
-                {complaint.riskAssessment?.urgencyLabel || 'Priority Investigation Active'}
-              </div>
-              <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)', marginTop: '4px' }}>
-                Action Window: {complaint.riskAssessment?.actionWindow || 'Immediate'}
+              <div style={{ fontSize: '1rem', fontWeight: '700', color: 'var(--text-primary)' }}>
+                {new Date(complaint.lastUpdated).toLocaleString()}
               </div>
             </div>
           </div>
 
-          {/* Chronological Action Logs */}
-          <div>
-            <h4 style={{ fontSize: '0.96rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '14px' }}>
-              Official Action Log & Investigation Trail
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {(complaint.actionLogs || []).map((log, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'flex-start',
-                    gap: '12px',
-                    padding: '12px 16px',
-                    background: 'var(--bg-surface)',
-                    borderRadius: 'var(--radius-xs)',
-                    borderLeft: '3px solid var(--primary-blue)'
-                  }}
-                >
-                  <Clock size={16} color="var(--text-muted)" style={{ marginTop: '2px', flexShrink: 0 }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-                      <span style={{ fontSize: '0.84rem', fontWeight: '700', color: 'var(--text-primary)' }}>
-                        {log.officer}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                        {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.82rem', color: 'var(--text-secondary)' }}>
-                      {log.action}
-                    </div>
-                  </div>
-                </div>
-              ))}
+          {/* Officer Message — if any */}
+          {complaint.officerMessage && (
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '0.96rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '12px' }}>
+                Latest Officer Update
+              </h4>
+              <div style={{
+                padding: '14px 18px',
+                background: 'var(--bg-surface)',
+                borderRadius: 'var(--radius-xs)',
+                borderLeft: '3px solid var(--primary-blue)',
+                fontSize: '0.88rem',
+                color: 'var(--text-secondary)',
+                lineHeight: '1.5'
+              }}>
+                {complaint.officerMessage}
+              </div>
             </div>
+          )}
+
+          {/* Privacy footer */}
+          <div style={{
+            marginTop: '20px',
+            paddingTop: '16px',
+            borderTop: '1px solid var(--border-glass)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <ShieldCheck size={14} color="var(--accent-emerald)" />
+            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>
+              For your privacy, only status and officer updates are shown. Full case details are accessible only to authorized investigating officials.
+            </span>
           </div>
         </div>
       )}

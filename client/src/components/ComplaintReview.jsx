@@ -12,15 +12,26 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
   const [dateOrTime, setDateOrTime] = useState(data.entities?.dateOrTime || 'Recent');
   const [autoSummary, setAutoSummary] = useState(data.autoSummary || '');
 
-  // Victim profile details
-  const [victimName, setVictimName] = useState(data.selectedPreset?.victim?.name || 'Smt. Anandi Devi');
-  const [victimPhone, setVictimPhone] = useState(data.selectedPreset?.victim?.phone || '+91 98765 12345');
-  const [victimAddress, setVictimAddress] = useState(data.selectedPreset?.victim?.location || location || 'Grievance Jurisdiction Cell');
+  // Victim profile details — empty by default so the victim must fill them in
+  const [victimName, setVictimName] = useState(data.selectedPreset?.victim?.name || '');
+  const [victimPhone, setVictimPhone] = useState(data.selectedPreset?.victim?.phone || '');
+  const [victimAddress, setVictimAddress] = useState(data.selectedPreset?.victim?.location || location || '');
+  const [validationError, setValidationError] = useState(null);
 
   const risk = data.riskAssessment || {};
   const acoustic = data.acousticAnalysis || {};
 
   const handleSubmit = async () => {
+    // Validate required victim fields
+    if (!victimName.trim()) {
+      setValidationError('Please enter your full name before submitting.');
+      return;
+    }
+    if (!victimPhone.trim()) {
+      setValidationError('Please enter your phone number. You will need it to track your complaint.');
+      return;
+    }
+    setValidationError(null);
     setIsSubmitting(true);
     try {
       const payload = {
@@ -217,24 +228,58 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', borderBottom: '1px solid var(--border-glass)', paddingBottom: '10px' }}>
             <User size={18} color="var(--primary-blue)" />
             <h3 style={{ fontSize: '1rem', fontWeight: '800', color: 'var(--text-primary)' }}>
-              2. Complainant Identification
+              2. Complainant Identification <span style={{ color: 'var(--risk-critical-text)', fontSize: '0.8rem' }}>*Required</span>
             </h3>
           </div>
 
+          {/* Important notice about phone for tracking */}
+          <div style={{
+            background: 'var(--bg-surface-subtle)',
+            border: '1px solid var(--border-glass)',
+            borderRadius: 'var(--radius-xs)',
+            padding: '10px 14px',
+            marginBottom: '16px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <Shield size={14} color="var(--accent-emerald)" style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: '0.76rem', color: 'var(--text-secondary)' }}>
+              <strong style={{ color: 'var(--text-primary)' }}>Important:</strong> Your phone number will be used to track your complaint status later. Please enter the correct number.
+            </span>
+          </div>
+
+          {/* Validation error */}
+          {validationError && (
+            <div style={{
+              background: 'var(--risk-critical-bg)',
+              border: '1px solid var(--risk-critical-border)',
+              borderRadius: 'var(--radius-xs)',
+              padding: '10px 14px',
+              marginBottom: '14px',
+              fontSize: '0.84rem',
+              color: 'var(--risk-critical-text)',
+              fontWeight: '600'
+            }}>
+              ⚠ {validationError}
+            </div>
+          )}
+
           <div style={{ marginBottom: '14px' }}>
             <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
-              FULL NAME / शिकायतकर्ता का नाम
+              FULL NAME / शिकायतकर्ता का नाम <span style={{ color: 'var(--risk-critical-text)' }}>*</span>
             </label>
             <input
               type="text"
               value={victimName}
-              onChange={(e) => setVictimName(e.target.value)}
+              onChange={(e) => { setVictimName(e.target.value); setValidationError(null); }}
+              placeholder="Enter your full name"
               style={{
                 width: '100%',
                 padding: '9px 12px',
                 borderRadius: 'var(--radius-xs)',
                 background: 'var(--bg-surface)',
-                border: '1px solid var(--border-glass)',
+                border: `1px solid ${!victimName.trim() && validationError ? 'var(--risk-critical-solid)' : 'var(--border-glass)'}`,
                 color: 'var(--text-primary)',
                 fontSize: '0.9rem'
               }}
@@ -243,18 +288,19 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
 
           <div style={{ marginBottom: '14px' }}>
             <label style={{ display: 'block', fontSize: '0.76rem', color: 'var(--text-muted)', marginBottom: '5px', fontWeight: '700' }}>
-              PRIMARY CONTACT NUMBER
+              PRIMARY CONTACT NUMBER <span style={{ color: 'var(--risk-critical-text)' }}>*</span>
             </label>
             <input
-              type="text"
+              type="tel"
               value={victimPhone}
-              onChange={(e) => setVictimPhone(e.target.value)}
+              onChange={(e) => { setVictimPhone(e.target.value); setValidationError(null); }}
+              placeholder="e.g. +91 98765 43210"
               style={{
                 width: '100%',
                 padding: '9px 12px',
                 borderRadius: 'var(--radius-xs)',
                 background: 'var(--bg-surface)',
-                border: '1px solid var(--border-glass)',
+                border: `1px solid ${!victimPhone.trim() && validationError ? 'var(--risk-critical-solid)' : 'var(--border-glass)'}`,
                 color: 'var(--text-primary)',
                 fontSize: '0.9rem'
               }}
@@ -269,6 +315,7 @@ export default function ComplaintReview({ data, onBack, onSubmitComplaint }) {
               type="text"
               value={victimAddress}
               onChange={(e) => setVictimAddress(e.target.value)}
+              placeholder="Enter your current address"
               style={{
                 width: '100%',
                 padding: '9px 12px',
