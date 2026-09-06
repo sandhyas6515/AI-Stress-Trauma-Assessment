@@ -14,6 +14,8 @@ export default function OfficialDashboard({ token, onAuthError }) {
   const [newStatus, setNewStatus] = useState('');
   const [officerNote, setOfficerNote] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [actionSuccessMsg, setActionSuccessMsg] = useState('');
+  const [actionErrorMsg, setActionErrorMsg] = useState('');
 
   useEffect(() => {
     fetchComplaints();
@@ -45,13 +47,17 @@ export default function OfficialDashboard({ token, onAuthError }) {
     setSelectedCase(c);
     setNewStatus(c.status);
     setOfficerNote('');
+    setActionSuccessMsg('');
+    setActionErrorMsg('');
   };
 
   const handleUpdateStatus = async (statusOverride = null, customNote = null) => {
     if (!selectedCase) return;
     setIsUpdating(true);
+    setActionSuccessMsg('');
+    setActionErrorMsg('');
     const targetStatus = statusOverride || newStatus;
-    const noteToSend = customNote || officerNote;
+    const noteToSend = customNote !== null ? customNote : officerNote;
 
     try {
       const res = await fetch(`/api/complaints/${selectedCase.ticketId}`, {
@@ -64,17 +70,28 @@ export default function OfficialDashboard({ token, onAuthError }) {
           status: targetStatus,
           officerName: 'Duty Nodal Officer (Atrocity Cell)',
           note: noteToSend,
-          newLog: noteToSend ? `Officer Action: ${noteToSend}` : `Status transitioned to ${targetStatus}.`
+          newLog: noteToSend ? `Official Directive: ${noteToSend}` : `Status transitioned to ${targetStatus}.`
         })
       });
+
+      if (res.status === 401 || res.status === 403) {
+        onAuthError?.();
+        return;
+      }
+
       const data = await res.json();
       if (data.success) {
         setSelectedCase(data.data);
         setOfficerNote('');
+        setActionSuccessMsg(`Official Directive committed. Docket updated to "${targetStatus}".`);
         fetchComplaints();
+        setTimeout(() => setActionSuccessMsg(''), 5000);
+      } else {
+        setActionErrorMsg(data.error || 'Failed to record official directive.');
       }
     } catch (err) {
       console.error('Error updating case:', err);
+      setActionErrorMsg('Network error: Unable to reach complaint management service.');
     } finally {
       setIsUpdating(false);
     }
@@ -377,7 +394,7 @@ export default function OfficialDashboard({ token, onAuthError }) {
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(0, 0, 0, 0.75)',
+          background: 'rgba(5, 10, 20, 0.88)',
           backdropFilter: 'blur(10px)',
           display: 'flex',
           justifyContent: 'center',
@@ -385,14 +402,28 @@ export default function OfficialDashboard({ token, onAuthError }) {
           zIndex: 9999,
           padding: '20px'
         }}>
-          <div className="glass-card" style={{ width: '100%', maxWidth: '920px', maxHeight: '90vh', overflowY: 'auto', padding: '32px', position: 'relative' }}>
+          <div className="glass-card" style={{
+            width: '100%',
+            maxWidth: '920px',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            padding: '32px',
+            position: 'relative',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.8)',
+            borderRadius: '16px'
+          }}>
             
             {/* Modal Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid var(--border-glass)', paddingBottom: '16px', marginBottom: '24px' }}>
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px', flexWrap: 'wrap' }}>
                   <span className={`status-pill ${getRiskBadgeClass(selectedCase.riskAssessment?.riskLevel)}`}>
                     {selectedCase.riskAssessment?.riskLevel?.toUpperCase()} RISK (SCORE: {selectedCase.riskAssessment?.fusedScore}/100)
+                  </span>
+                  <span className="status-pill" style={{ background: 'var(--accent-blue-subtle)', color: 'var(--accent-blue)', border: '1px solid var(--border-hover)', fontWeight: '700', fontSize: '0.78rem' }}>
+                    STAGE: {selectedCase.status?.toUpperCase() || 'SUBMITTED'}
                   </span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: '600' }}>
                     {selectedCase.riskAssessment?.actionWindow}
@@ -551,10 +582,29 @@ export default function OfficialDashboard({ token, onAuthError }) {
             </div>
 
             {/* Officer Workflow Actions Form */}
-            <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', padding: '20px', border: '1px solid var(--border-glass)' }}>
-              <h4 style={{ fontSize: '0.92rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '14px' }}>
-                Official Action & Case State Management
-              </h4>
+            <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', padding: '20px', border: '1px solid var(--border-glass)', marginBottom: '20px' }}>
+              <div style={{ marginBottom: '14px' }}>
+                <h4 style={{ fontSize: '0.94rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '4px' }}>
+                  Official Action & Case State Management
+                </h4>
+                <p style={{ fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
+                  Transition the grievance stage and attach administrative or police orders to this legal docket.
+                </p>
+              </div>
+
+              {actionSuccessMsg && (
+                <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'var(--risk-low-bg)', border: '1px solid var(--risk-low-border)', color: 'var(--risk-low-text)', fontSize: '0.84rem', fontWeight: '600', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <CheckCircle size={16} />
+                  <span>{actionSuccessMsg}</span>
+                </div>
+              )}
+
+              {actionErrorMsg && (
+                <div style={{ padding: '10px 14px', borderRadius: '8px', background: 'var(--risk-critical-bg)', border: '1px solid var(--risk-critical-border)', color: 'var(--risk-critical-text)', fontSize: '0.84rem', fontWeight: '600', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <AlertTriangle size={16} />
+                  <span>{actionErrorMsg}</span>
+                </div>
+              )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '14px', marginBottom: '14px' }}>
                 <div>
@@ -592,6 +642,7 @@ export default function OfficialDashboard({ token, onAuthError }) {
                     placeholder="e.g. Assigned to DSP Atrocity Cell; Complainant safe shelter verified."
                     value={officerNote}
                     onChange={(e) => setOfficerNote(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === 'Enter') handleUpdateStatus(); }}
                     style={{
                       width: '100%',
                       padding: '9px 12px',
@@ -621,8 +672,48 @@ export default function OfficialDashboard({ token, onAuthError }) {
                   style={{ fontSize: '0.85rem' }}
                 >
                   <Send size={15} />
-                  {isUpdating ? 'Recording...' : 'Commit Official Directive'}
+                  {isUpdating ? 'Recording Directive...' : 'Commit Official Directive'}
                 </button>
+              </div>
+            </div>
+
+            {/* Case Audit Trail & Action Logs History */}
+            <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-md)', padding: '20px', border: '1px solid var(--border-glass)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                <FileText size={16} color="var(--primary-blue)" />
+                <h4 style={{ fontSize: '0.9rem', fontWeight: '800', color: 'var(--text-primary)' }}>
+                  Case Audit Trail & Logged Directives ({selectedCase.actionLogs?.length || 0})
+                </h4>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '220px', overflowY: 'auto' }}>
+                {(selectedCase.actionLogs && selectedCase.actionLogs.length > 0) ? (
+                  [...selectedCase.actionLogs].reverse().map((log, idx) => (
+                    <div key={idx} style={{
+                      padding: '10px 14px',
+                      borderRadius: 'var(--radius-xs)',
+                      background: idx === 0 ? 'var(--accent-blue-subtle)' : 'var(--bg-card)',
+                      borderLeft: idx === 0 ? '3px solid var(--accent-blue)' : '3px solid var(--border-color)',
+                      fontSize: '0.82rem'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+                        <span style={{ fontWeight: '700', color: 'var(--text-primary)' }}>
+                          {log.officer || 'Official Authority'}
+                        </span>
+                        <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                          {log.timestamp ? new Date(log.timestamp).toLocaleString() : ''}
+                        </span>
+                      </div>
+                      <div style={{ color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                        {log.action}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    No prior official directives recorded for this docket.
+                  </div>
+                )}
               </div>
             </div>
 

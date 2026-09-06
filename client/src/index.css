@@ -105,7 +105,8 @@ h1, h2, h3, h4 {
 }
 
 /* Glass & Card Styles */
-.exact-card {
+.exact-card,
+.glass-card {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 16px;
