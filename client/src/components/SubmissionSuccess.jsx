@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import QRCode from 'qrcode';
-import { CheckCircle2, Download, Copy, ExternalLink, PhoneCall, ShieldAlert, HeartHandshake, Scale, Ambulance, ArrowRight, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Download, Copy, ExternalLink, PhoneCall, ShieldAlert, HeartHandshake, Scale, Ambulance, ArrowRight, ShieldCheck, Printer } from 'lucide-react';
 
 export default function SubmissionSuccess({ complaint, onGoToTracker }) {
   const [copied, setCopied] = useState(false);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState('');
+  const receiptRef = useRef(null);
 
   const ticketId = complaint.ticketId || 'NHAA-2026-000000';
   const risk = complaint.riskAssessment || {};
+  const acoustic = complaint.acousticAnalysis || {};
   const isCritical = risk.riskLevel === 'Critical';
+
+  useEffect(() => {
+    const qrData = `https://nhaa.gov.in/track?ticket=${ticketId}`;
+    QRCode.toDataURL(qrData, { margin: 1, width: 140 })
+      .then(setQrDataUrl)
+      .catch((err) => console.error('QR generation error:', err));
+  }, [ticketId]);
 
   const handleCopyTicket = () => {
     navigator.clipboard.writeText(ticketId);
@@ -18,135 +29,43 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
   };
 
   const handleDownloadPdf = async () => {
+    if (!receiptRef.current) return;
     setIsGeneratingPdf(true);
     try {
-      const doc = new jsPDF();
-      const qrData = `https://nhaa.gov.in/track?ticket=${ticketId}`;
-      const qrDataUrl = await QRCode.toDataURL(qrData, { margin: 1, width: 120 });
+      // Ensure fonts and images are ready
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
-      // Official Header Band (Gov Navy)
-      doc.setFillColor(15, 23, 42);
-      doc.rect(0, 0, 210, 36, 'F');
-
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(13);
-      doc.text('NATIONAL HELPLINE / APPLICATION FOR ATROCITIES (NHAA)', 14, 14);
-
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Ministry of Social Justice & Empowerment, Government of India', 14, 22);
-      doc.text('Real-Time Voice Trauma Assessment & Statutory Grievance Redressal', 14, 29);
-
-      // QR Code in Header
-      doc.addImage(qrDataUrl, 'PNG', 165, 3, 30, 30);
-
-      // Ticket ID & Stamp
-      doc.setTextColor(15, 23, 42);
-      doc.setFontSize(13);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`OFFICIAL COMPLAINT ACKNOWLEDGMENT DOCKET`, 14, 48);
-
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`TICKET IDENTIFIER: `, 14, 56);
-      doc.setFont('helvetica', 'bold');
-      doc.text(`${ticketId}`, 62, 56);
-
-      doc.setFont('helvetica', 'normal');
-      doc.text(`LODGED AT: ${new Date(complaint.createdAt || Date.now()).toLocaleString()}`, 14, 63);
-      doc.text(`STATUS: ${complaint.status || 'Submitted (Queued for Priority Triage)'}`, 14, 70);
-
-      // Risk Triage Badge
-      doc.setFillColor(isCritical ? 225 : 37, isCritical ? 29 : 99, isCritical ? 72 : 235);
-      doc.roundedRect(135, 50, 60, 18, 2, 2, 'F');
-      doc.setTextColor(255, 255, 255);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
-      doc.text(`TRIAGE LEVEL: ${(risk.riskLevel || 'LOW').toUpperCase()}`, 140, 58);
-      doc.setFontSize(8);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Distress Score: ${risk.fusedScore || 20}/100`, 140, 64);
-
-      // Section 1: Complainant Details
-      doc.setDrawColor(200, 200, 200);
-      doc.line(14, 76, 196, 76);
-
-      doc.setTextColor(30, 41, 59);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text('1. Complainant Demographics', 14, 83);
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Full Name: ${complaint.victim?.name || 'N/A'}`, 14, 90);
-      doc.text(`Contact: ${complaint.victim?.phone || 'N/A'}`, 100, 90);
-      doc.text(`Location: ${complaint.victim?.location || 'N/A'}`, 14, 96);
-
-      // Section 2: Accused & Incident
-      doc.line(14, 102, 196, 102);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text('2. Incident & Accused Details', 14, 109);
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`Accused Name(s): ${complaint.entities?.accusedName || 'Unspecified'}`, 14, 116);
-      doc.text(`Incident Nature: ${complaint.entities?.incidentType || 'Grievance'}`, 14, 122);
-      doc.text(`Location of Occurrence: ${complaint.entities?.location || 'N/A'}`, 14, 128);
-      doc.text(`Date / Time: ${complaint.entities?.dateOrTime || 'Recent'}`, 100, 128);
-
-      // Section 3: AI Trauma & Acoustic Signals
-      doc.line(14, 134, 196, 134);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text('3. AI Acoustic Stress & Trauma Assessment Metrics', 14, 141);
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      const acoustic = complaint.acousticAnalysis || {};
-      doc.text(`Voice Stress Level: ${acoustic.acousticStressScore || 30}% (Acoustic Emotion: ${acoustic.emotion || 'Calm'})`, 14, 148);
-      doc.text(`Pitch Volatility Index: ${acoustic.features?.pitchVolatility || 40}% | Hesitation/Pause: ${acoustic.features?.pauseRatio || 30}%`, 14, 154);
-      doc.text(`Text Semantic Trauma: ${complaint.nlpAnalysis?.textTraumaScore || 30}%`, 14, 160);
-
-      // Section 4: Summary & Transcript
-      doc.line(14, 166, 196, 166);
-      doc.setFontSize(11);
-      doc.setFont('helvetica', 'bold');
-      doc.text('4. Official Executive Summary', 14, 173);
-
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      const splitSummary = doc.splitTextToSize(complaint.autoSummary || 'Summary pending officer review.', 180);
-      doc.text(splitSummary, 14, 180);
-
-      const yTranscript = 182 + (splitSummary.length * 5);
-      doc.setFont('helvetica', 'bold');
-      doc.text('Spoken Testimony Transcript:', 14, yTranscript);
-      doc.setFont('helvetica', 'normal');
-      const splitTranscript = doc.splitTextToSize(`"${complaint.transcript || 'No transcript text.'}"`, 180);
-      doc.text(splitTranscript, 14, yTranscript + 6);
-
-      // Section 5: Recommended Supports
-      const ySupport = yTranscript + 8 + (splitTranscript.length * 5);
-      doc.line(14, ySupport, 196, ySupport);
-      doc.setFont('helvetica', 'bold');
-      doc.text('5. AI Recommended Support & Directives', 14, ySupport + 7);
-      doc.setFont('helvetica', 'normal');
-
-      let currentY = ySupport + 13;
-      (risk.recommendedSupport || []).forEach((sup) => {
-        doc.text(`• ${sup.type}: ${sup.description} (Contact: ${sup.contact})`, 16, currentY);
-        currentY += 6;
+      const canvas = await html2canvas(receiptRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
       });
 
-      // Footer
-      doc.setFontSize(8);
-      doc.setTextColor(100, 116, 139);
-      doc.text('This is a computer-generated digital legal receipt under the NHAA Automated Grievance Architecture.', 14, 285);
-      doc.text(`Official Verification URL: ${qrData}`, 14, 290);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = 210; // A4 mm
+      const pageHeight = 297; // A4 mm
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
 
-      doc.save(`NHAA_Complaint_Receipt_${ticketId}.pdf`);
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, imgHeight, undefined, 'FAST');
+      } else {
+        let position = 0;
+        let heightLeft = imgHeight;
+
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+        heightLeft -= pageHeight;
+
+        while (heightLeft > 0) {
+          position -= pageHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+          heightLeft -= pageHeight;
+        }
+      }
+
+      pdf.save(`NHAA_Complaint_Receipt_${ticketId}.pdf`);
     } catch (e) {
       console.error('PDF error:', e);
       alert('Failed generating PDF: ' + e.message);
@@ -284,6 +203,194 @@ export default function SubmissionSuccess({ complaint, onGoToTracker }) {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Hidden Offscreen Printable A4 Receipt for 100% Crisp Unicode / Indic PDF Generation */}
+      <div style={{ position: 'fixed', left: '-9999px', top: 0, width: '794px', zIndex: -100, pointerEvents: 'none' }}>
+        <div
+          ref={receiptRef}
+          style={{
+            width: '794px',
+            backgroundColor: '#ffffff',
+            color: '#0f172a',
+            fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
+            padding: '36px 40px',
+            boxSizing: 'border-box'
+          }}
+        >
+          {/* Header Band */}
+          <div style={{ backgroundColor: '#0f172a', color: '#ffffff', padding: '18px 24px', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px' }}>
+            <div>
+              <div style={{ fontSize: '12px', fontWeight: '800', letterSpacing: '0.04em', textTransform: 'uppercase', color: '#93c5fd' }}>
+                Government of India • Ministry of Social Justice & Empowerment
+              </div>
+              <div style={{ fontSize: '18px', fontWeight: '800', marginTop: '4px', letterSpacing: '-0.01em' }}>
+                NATIONAL HELPLINE / APPLICATION FOR ATROCITIES (NHAA)
+              </div>
+              <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '3px' }}>
+                Real-Time Voice Trauma Assessment & Statutory Grievance Redressal Gateway
+              </div>
+            </div>
+            {qrDataUrl && (
+              <div style={{ backgroundColor: '#ffffff', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src={qrDataUrl} alt="Track QR" style={{ width: '64px', height: '64px', display: 'block' }} />
+              </div>
+            )}
+          </div>
+
+          {/* Docket Identifier & Triage Status */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', paddingBottom: '16px', borderBottom: '2px solid #0f172a', marginBottom: '20px' }}>
+            <div>
+              <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                Official Complaint Acknowledgment Docket
+              </div>
+              <div style={{ fontSize: '13px', color: '#334155', marginTop: '4px' }}>
+                <strong>TICKET IDENTIFIER:</strong> <span style={{ fontFamily: 'monospace', fontSize: '15px', fontWeight: '800', color: '#1d4ed8' }}>{ticketId}</span>
+              </div>
+              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                <strong>Lodged At:</strong> {new Date(complaint.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
+              </div>
+              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                <strong>Status:</strong> {complaint.status || 'Submitted (Queued for Priority Triage)'}
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'right' }}>
+              <div style={{
+                display: 'inline-block',
+                padding: '8px 16px',
+                borderRadius: '6px',
+                backgroundColor: isCritical ? '#fee2e2' : '#eff6ff',
+                border: `1px solid ${isCritical ? '#f87171' : '#93c5fd'}`,
+                color: isCritical ? '#dc2626' : '#1d4ed8',
+                fontWeight: '800',
+                fontSize: '12px'
+              }}>
+                TRIAGE: {(risk.riskLevel || 'MODERATE').toUpperCase()} RISK ({risk.fusedScore || 30}/100)
+              </div>
+              <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>
+                {risk.actionWindow || 'Standard SLA Window'}
+              </div>
+            </div>
+          </div>
+
+          {/* Section 1: Complainant Demographics */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', marginBottom: '8px' }}>
+              1. Complainant Demographics
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1.5fr', gap: '8px', fontSize: '12px', color: '#334155' }}>
+              <div><strong>Full Name:</strong> {complaint.victim?.name || 'N/A'}</div>
+              <div><strong>Contact:</strong> {complaint.victim?.phone || 'N/A'}</div>
+              <div><strong>Location:</strong> {complaint.victim?.location || 'Location not specified'}</div>
+            </div>
+          </div>
+
+          {/* Section 2: Incident & Accused Details */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', marginBottom: '8px' }}>
+              2. Incident & Accused Details
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.5fr', gap: '8px', fontSize: '12px', color: '#334155', marginBottom: '4px' }}>
+              <div><strong>Accused Name(s):</strong> {complaint.entities?.accusedName || 'Unspecified / Multiple Individuals'}</div>
+              <div><strong>Incident Nature:</strong> {complaint.entities?.incidentType || 'Atrocity Grievance / Deprivation'}</div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1.5fr', gap: '8px', fontSize: '12px', color: '#334155' }}>
+              <div><strong>Location of Occurrence:</strong> {complaint.entities?.location || 'Not explicitly mentioned'}</div>
+              <div><strong>Date / Time:</strong> {complaint.entities?.dateOrTime || 'Recent / Ongoing incident'}</div>
+            </div>
+          </div>
+
+          {/* Section 3: AI Acoustic Stress & Trauma Assessment Metrics */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', marginBottom: '8px' }}>
+              3. AI Acoustic Stress & Trauma Assessment Metrics
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', fontSize: '11px', color: '#334155' }}>
+              <div style={{ backgroundColor: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                <div style={{ color: '#64748b', fontSize: '10px', fontWeight: '700' }}>VOICE STRESS LEVEL</div>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: '#1e293b', marginTop: '2px' }}>
+                  {acoustic.acousticStressScore || 30}%
+                </div>
+                <div style={{ color: '#475569', fontSize: '10px' }}>Emotion: {acoustic.emotion || 'Calm'}</div>
+              </div>
+              <div style={{ backgroundColor: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                <div style={{ color: '#64748b', fontSize: '10px', fontWeight: '700' }}>PITCH VOLATILITY / PAUSES</div>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: '#1e293b', marginTop: '2px' }}>
+                  {acoustic.features?.pitchVolatility || 40}%
+                </div>
+                <div style={{ color: '#475569', fontSize: '10px' }}>Hesitation: {acoustic.features?.pauseRatio || 30}%</div>
+              </div>
+              <div style={{ backgroundColor: '#f8fafc', padding: '8px 12px', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+                <div style={{ color: '#64748b', fontSize: '10px', fontWeight: '700' }}>TEXT SEMANTIC TRAUMA</div>
+                <div style={{ fontSize: '15px', fontWeight: '800', color: isCritical ? '#dc2626' : '#1e293b', marginTop: '2px' }}>
+                  {complaint.nlpAnalysis?.textTraumaScore || 30}%
+                </div>
+                <div style={{ color: '#475569', fontSize: '10px' }}>Urgency: {risk.urgencyLabel || 'Standard Review'}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Official Executive Summary & Spoken Voice Testimony Transcript */}
+          <div style={{ marginBottom: '16px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', marginBottom: '8px' }}>
+              4. Official Executive Summary & Spoken Testimony Transcript
+            </div>
+            
+            {complaint.autoSummary && (
+              <div style={{ fontSize: '12px', lineHeight: '1.5', color: '#1e293b', marginBottom: '8px' }}>
+                <strong>Executive Summary:</strong> {complaint.autoSummary}
+              </div>
+            )}
+
+            <div style={{ fontSize: '11px', fontWeight: '700', color: '#475569', marginBottom: '4px' }}>
+              Spoken Testimony Transcript (Raw Audio Capture):
+            </div>
+            <div style={{
+              backgroundColor: '#f8fafc',
+              border: '1px solid #cbd5e1',
+              borderRadius: '6px',
+              padding: '10px 14px',
+              fontSize: '12px',
+              lineHeight: '1.5',
+              color: '#0f172a',
+              fontStyle: 'italic'
+            }}>
+              "{complaint.transcript || 'No spoken audio transcript recorded.'}"
+            </div>
+          </div>
+
+          {/* Section 5: AI Recommended Support & Directives */}
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ fontSize: '12px', fontWeight: '800', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#1e293b', borderBottom: '1px solid #e2e8f0', paddingBottom: '4px', marginBottom: '8px' }}>
+              5. AI Recommended Support & Directives
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              {(risk.recommendedSupport && risk.recommendedSupport.length > 0) ? (
+                risk.recommendedSupport.map((sup, idx) => (
+                  <div key={idx} style={{ fontSize: '11px', color: '#334155', lineHeight: '1.4' }}>
+                    • <strong>{sup.type}:</strong> {sup.description} <span style={{ color: '#1d4ed8', fontWeight: '700' }}>(Contact: {sup.contact})</span>
+                  </div>
+                ))
+              ) : (
+                <div style={{ fontSize: '11px', color: '#64748b' }}>
+                  Standard grievance redressal protocol assigned.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Official Verification Footer */}
+          <div style={{ borderTop: '1px solid #cbd5e1', paddingTop: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '10px', color: '#64748b' }}>
+            <div>
+              This is an official computer-generated legal docket receipt under the NHAA Automated Grievance Architecture.<br />
+              Ministry of Social Justice & Empowerment, Government of India.
+            </div>
+            <div style={{ textAlign: 'right', fontFamily: 'monospace' }}>
+              Verification URL: https://nhaa.gov.in/track?ticket={ticketId}
+            </div>
+          </div>
         </div>
       </div>
 
