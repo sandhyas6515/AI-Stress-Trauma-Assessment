@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Square, Play, Pause, RotateCcw, ArrowRight, Activity, FileText, Shield, Clock, Users, ChevronDown, Sparkles } from 'lucide-react';
+import { Mic, Square, Play, Pause, RotateCcw, ArrowRight, Activity, FileText, Shield, Clock, Users, ChevronDown, Sparkles, MessageSquare } from 'lucide-react';
 import LandmarkSilhouette from './LandmarkSilhouette';
 
 const SUPPORTED_LANGUAGES = [
