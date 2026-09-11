@@ -6,7 +6,8 @@ import { extractEntitiesAndAnalyzeText } from './services/nlpService.js';
 import { computeFusedRisk } from './services/fusedRiskService.js';
 import { complaintsStore } from './data/complaintsStore.js';
 import { demoScenarios } from './data/demoScenarios.js';
-import { authenticateOfficial, generateToken, requireOfficialAuth } from './middleware/authMiddleware.js';
+import { authenticateOfficial, generateToken, requireOfficialAuth, canAccessAuditLog } from './middleware/authMiddleware.js';
+import { auditLogMiddleware } from './middleware/auditLogMiddleware.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -346,7 +347,7 @@ app.get('/api/complaints', requireOfficialAuth, (req, res) => {
  * POST /api/complaints
  * Submit a finalized complaint from the victim app
  */
-app.post('/api/complaints', (req, res) => {
+app.post('/api/complaints', auditLogMiddleware, (req, res) => {
   try {
     const complaintData = req.body;
     if (!complaintData.transcript && !complaintData.autoSummary) {
@@ -382,9 +383,10 @@ app.get('/api/complaints/:id', requireOfficialAuth, (req, res) => {
 /**
  * PATCH /api/complaints/:id
  * PROTECTED — Officials only.
- * Update status, assign officer, or log officer notes
+ * Update status, assign officer, or log officer notes.
+ * Automatically recorded in complaints/{ticketId}/auditLog/ via auditLogMiddleware.
  */
-app.patch('/api/complaints/:id', requireOfficialAuth, (req, res) => {
+app.patch('/api/complaints/:id', requireOfficialAuth, auditLogMiddleware, (req, res) => {
   try {
     const ticketId = req.params.id;
     const updates = req.body;
@@ -394,6 +396,49 @@ app.patch('/api/complaints/:id', requireOfficialAuth, (req, res) => {
     }
     res.json({ success: true, data: updated });
   } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/complaints/:id/audit-log
+ * PROTECTED — Officials only.
+ * Returns the immutable audit trail from Firestore subcollection:
+ * complaints/{ticketId}/auditLog/ in chronological order (most recent first).
+ *
+ * RBAC Rules:
+ * - Only Supervisor/Admin role can view audit logs across all officers.
+ * - Regular officers see only the log for cases they are currently assigned to.
+ */
+app.get('/api/complaints/:id/audit-log', requireOfficialAuth, async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const complaint = complaintsStore.getById(ticketId);
+    if (!complaint) {
+      return res.status(404).json({ success: false, error: `Ticket ${ticketId} not found` });
+    }
+
+    // Role-based access check
+    const hasAccess = canAccessAuditLog(req.official, complaint);
+    if (!hasAccess) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access restricted: Regular officers may only view audit logs for cases they are currently assigned to.',
+        assignedOfficer: complaint.assignedOfficer,
+        assignedOfficerId: complaint.assignedOfficerId
+      });
+    }
+
+    const auditLogs = await complaintsStore.getAuditLogs(ticketId);
+    res.json({
+      success: true,
+      ticketId: complaint.ticketId,
+      count: auditLogs.length,
+      data: auditLogs,
+      accessRole: req.official.role
+    });
+  } catch (error) {
+    console.error('Error retrieving audit log:', error);
     res.status(500).json({ success: false, error: error.message });
   }
 });

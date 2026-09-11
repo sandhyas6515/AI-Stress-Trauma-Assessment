@@ -1,13 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Mic, Square, Play, Pause, RotateCcw, ArrowRight, Activity, FileText, Shield, Clock, Users, ChevronDown, Sparkles, MessageSquare } from 'lucide-react';
+import { 
+  Mic, Square, Play, Pause, RotateCcw, ArrowRight, Activity, 
+  FileText, Shield, Clock, Users, ChevronDown, Sparkles, 
+  MessageSquare, Edit3, Check, Trash2, Volume2, AlertCircle, RefreshCw 
+} from 'lucide-react';
 import LandmarkSilhouette from './LandmarkSilhouette';
 
 const SUPPORTED_LANGUAGES = [
-  { code: 'hi', name: 'हिंदी (Hindi)', speechCode: 'hi-IN' },
-  { code: 'en', name: 'English', speechCode: 'en-IN' },
-  { code: 'mr', name: 'मराठी (Marathi)', speechCode: 'mr-IN' },
-  { code: 'ta', name: 'தமிழ் (Tamil)', speechCode: 'ta-IN' },
-  { code: 'bn', name: 'বাংলা (Bengali)', speechCode: 'bn-IN' }
+  { code: 'hi', name: 'हिंदी (Hindi)', speechCode: 'hi-IN', hint: 'Best for pure Hindi / Devanagari' },
+  { code: 'en', name: 'English (Indian / Hinglish)', speechCode: 'en-IN', hint: 'Fastest pickup for English & mixed words' },
+  { code: 'mr', name: 'मराठी (Marathi)', speechCode: 'mr-IN', hint: 'Marathi dialect' },
+  { code: 'ta', name: 'தமிழ் (Tamil)', speechCode: 'ta-IN', hint: 'Tamil speech' },
+  { code: 'bn', name: 'বাংলা (Bengali)', speechCode: 'bn-IN', hint: 'Bengali speech' }
+];
+
+const QUICK_VOICE_TEMPLATES = [
+  { label: 'Caste Abuse / जातिसूचक गाली', text: 'गाँव के कुछ लोगों ने मुझे और मेरे परिवार को सार्वजनिक स्थान पर जातिसूचक गालियाँ दीं और जान से मारने की धमकी दी। हमें तुरंत सुरक्षा और एफआईआर की आवश्यकता है।' },
+  { label: 'Land Dispute / ज़मीन विवाद', text: 'हमारी पुश्तैनी ज़मीन पर दबंगों द्वारा अवैध कब्जा किया जा रहा है और हमें गाँव से बेदखल करने की धमकी दी जा रही है। इस पर तुरंत कानूनी कार्रवाई की जाए।' },
+  { label: 'Water Denial / पानी रोकने की शिकायत', text: 'सार्वजनिक सरकारी हैंडपंप और कुएं से हमें पानी भरने से रोका जा रहा है और मारपीट की जा रही है। हम बुनियादी सुविधाओं से वंचित हैं।' },
+  { label: 'Physical Assault / मारपीट व हमला', text: 'कल रात पंचायत के पास हमारे घर पर हमला हुआ और लाठी-डंडों से मारपीट की गई जिसमें दो लोग घायल हैं। कृपया तुरंत सहायता भेजें।' }
 ];
 
 export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoScenarios = [], theme = 'dark' }) {
@@ -16,6 +27,10 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
   const [recordingDuration, setRecordingDuration] = useState(0);
   const [transcript, setTranscript] = useState('');
   const [interimTranscript, setInterimTranscript] = useState('');
+  const [isVoiceDetected, setIsVoiceDetected] = useState(false);
+  const [voiceRmsLevel, setVoiceRmsLevel] = useState(0);
+  const [speechEngineStatus, setSpeechEngineStatus] = useState('ready');
+  const [isEditingTranscript, setIsEditingTranscript] = useState(false);
   const [audioUrl, setAudioUrl] = useState(null);
   const [audioBlob, setAudioBlob] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -31,39 +46,243 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
   const durationTimerRef = useRef(null);
   const audioContextRef = useRef(null);
   const analyserRef = useRef(null);
+  const animFrameRef = useRef(null);
+  const canvasRef = useRef(null);
+  const isRecordingRef = useRef(false);
+  const isRecognitionStartingRef = useRef(false);
+  const isRecognitionRunningRef = useRef(false);
+  const finalTranscriptRef = useRef('');
   const metricsCollectorRef = useRef({ energies: [], pauseCount: 0, totalFrames: 0 });
 
   useEffect(() => {
     return () => {
       stopRecording();
       if (durationTimerRef.current) clearInterval(durationTimerRef.current);
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
         audioContextRef.current.close();
       }
     };
   }, []);
 
+  // 60FPS Dynamic Real-time Equalizer Waveform on Canvas (0ms Latency)
+  const startVisualizer = () => {
+    if (!analyserRef.current) return;
+    const analyser = analyserRef.current;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    const timeArray = new Uint8Array(bufferLength);
+
+    const draw = () => {
+      if (!isRecordingRef.current) return;
+      animFrameRef.current = requestAnimationFrame(draw);
+
+      analyser.getByteFrequencyData(dataArray);
+      analyser.getByteTimeDomainData(timeArray);
+
+      // Compute instant RMS sound energy
+      let sumSquares = 0;
+      for (let i = 0; i < timeArray.length; i++) {
+        const norm = (timeArray[i] - 128) / 128;
+        sumSquares += norm * norm;
+      }
+      const rms = Math.sqrt(sumSquares / timeArray.length);
+      const speaking = rms > 0.025;
+      setIsVoiceDetected(speaking);
+      setVoiceRmsLevel(Math.min(100, Math.round(rms * 280)));
+
+      // Collect metrics for backend acoustic analysis
+      const metrics = metricsCollectorRef.current;
+      metrics.totalFrames++;
+      metrics.energies.push(rms);
+      if (!speaking) metrics.pauseCount++;
+
+      // Canvas Rendering
+      if (canvasRef.current) {
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        const width = canvas.width;
+        const height = canvas.height;
+        ctx.clearRect(0, 0, width, height);
+
+        const barCount = 28;
+        const barWidth = 4;
+        const barGap = 4;
+        const totalW = barCount * (barWidth + barGap) - barGap;
+        const startX = (width - totalW) / 2;
+
+        for (let i = 0; i < barCount; i++) {
+          const binIndex = Math.floor((i / barCount) * (bufferLength / 3));
+          const freqVal = dataArray[binIndex] || 0;
+          const normalized = freqVal / 255;
+          const barHeight = Math.max(4, normalized * height * 0.9);
+
+          const x = startX + i * (barWidth + barGap);
+          const y = (height - barHeight) / 2;
+
+          ctx.fillStyle = speaking
+            ? (normalized > 0.45 ? '#2563eb' : '#38bdf8')
+            : 'rgba(148, 163, 184, 0.35)';
+
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(x, y, barWidth, barHeight, 2);
+          } else {
+            ctx.rect(x, y, barWidth, barHeight);
+          }
+          ctx.fill();
+        }
+      }
+    };
+
+    draw();
+  };
+
+  // Robust, Non-Colliding Web Speech API Initializer
+  const initSpeechRecognition = () => {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setSpeechEngineStatus('not-supported');
+      return null;
+    }
+
+    if (recognitionRef.current) {
+      return recognitionRef.current;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      isRecognitionRunningRef.current = true;
+      isRecognitionStartingRef.current = false;
+      setSpeechEngineStatus('listening');
+    };
+
+    recognition.onspeechstart = () => {
+      setSpeechEngineStatus('speaking');
+    };
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) {
+          const piece = event.results[i][0].transcript.trim();
+          if (piece) {
+            finalTranscriptRef.current = (finalTranscriptRef.current + ' ' + piece).trim();
+          }
+        } else {
+          interim += event.results[i][0].transcript;
+        }
+      }
+      setTranscript(finalTranscriptRef.current);
+      setInterimTranscript(interim);
+    };
+
+    recognition.onerror = (event) => {
+      console.warn('SpeechRecognition error:', event.error);
+      if (event.error === 'no-speech') {
+        setSpeechEngineStatus('listening');
+      } else if (event.error === 'aborted') {
+        isRecognitionRunningRef.current = false;
+        isRecognitionStartingRef.current = false;
+      } else if (event.error === 'network') {
+        setSpeechEngineStatus('network-error');
+        isRecognitionRunningRef.current = false;
+        isRecognitionStartingRef.current = false;
+      } else if (event.error === 'not-allowed') {
+        setSpeechEngineStatus('not-allowed');
+        isRecognitionRunningRef.current = false;
+        isRecognitionStartingRef.current = false;
+      } else {
+        isRecognitionRunningRef.current = false;
+        isRecognitionStartingRef.current = false;
+      }
+    };
+
+    recognition.onend = () => {
+      isRecognitionRunningRef.current = false;
+      isRecognitionStartingRef.current = false;
+
+      // Clean delayed auto-restart without rapid collision loops
+      if (isRecordingRef.current) {
+        setTimeout(() => {
+          if (isRecordingRef.current && !isRecognitionRunningRef.current && !isRecognitionStartingRef.current) {
+            try {
+              isRecognitionStartingRef.current = true;
+              recognition.start();
+            } catch (e) {
+              isRecognitionStartingRef.current = false;
+            }
+          }
+        }, 180);
+      } else {
+        setSpeechEngineStatus('ready');
+      }
+    };
+
+    recognitionRef.current = recognition;
+    return recognition;
+  };
+
+  const handleLanguageChange = (newLang) => {
+    setSelectedLanguage(newLang);
+    const rec = initSpeechRecognition();
+    if (rec) {
+      const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === newLang);
+      rec.lang = currentLangObj ? currentLangObj.speechCode : 'hi-IN';
+      if (isRecordingRef.current && isRecognitionRunningRef.current) {
+        try {
+          rec.stop(); // onend will auto-restart with the new language
+        } catch (e) {}
+      }
+    }
+  };
+
   const startRecording = async () => {
     try {
       audioChunksRef.current = [];
       metricsCollectorRef.current = { energies: [], pauseCount: 0, totalFrames: 0 };
+      finalTranscriptRef.current = '';
       setTranscript('');
       setInterimTranscript('');
       setAudioUrl(null);
       setAudioBlob(null);
       setSelectedPresetId('');
+      setIsEditingTranscript(false);
+      setSpeechEngineStatus('listening');
 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      // 1. Safe mic access with resilient fallback
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          }
+        });
+      } catch (constraintErr) {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      }
 
+      // 2. Audio Context & Analyser
       const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       audioContextRef.current = audioCtx;
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+      }
+
       const analyser = audioCtx.createAnalyser();
-      analyser.fftSize = 512;
+      analyser.fftSize = 256;
       analyserRef.current = analyser;
 
       const source = audioCtx.createMediaStreamSource(stream);
       source.connect(analyser);
 
+      // 3. MediaRecorder
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
 
@@ -89,47 +308,49 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
         }
       };
 
-      mediaRecorder.start(100);
+      mediaRecorder.start(500);
 
-      // Live STT
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognitionRef.current = recognition;
-        const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage);
-        recognition.lang = currentLangObj ? currentLangObj.speechCode : 'hi-IN';
-        recognition.continuous = true;
-        recognition.interimResults = true;
-
-        recognition.onresult = (event) => {
-          let currentFinal = '';
-          let currentInterim = '';
-          for (let i = event.resultIndex; i < event.results.length; i++) {
-            const segment = event.results[i][0].transcript;
-            if (event.results[i].isFinal) currentFinal += segment + ' ';
-            else currentInterim += segment;
-          }
-          if (currentFinal) setTranscript(prev => (prev + ' ' + currentFinal).trim());
-          setInterimTranscript(currentInterim);
-        };
-
-        try { recognition.start(); } catch (err) {}
-      }
-
+      isRecordingRef.current = true;
       setIsRecording(true);
       setRecordingDuration(0);
+
+      // Start zero-latency visualizer immediately
+      startVisualizer();
+
+      // 4. Start Speech Recognition cleanly
+      const rec = initSpeechRecognition();
+      if (rec) {
+        const currentLangObj = SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage);
+        rec.lang = currentLangObj ? currentLangObj.speechCode : 'hi-IN';
+        if (!isRecognitionRunningRef.current && !isRecognitionStartingRef.current) {
+          try {
+            isRecognitionStartingRef.current = true;
+            rec.start();
+          } catch (e) {
+            isRecognitionStartingRef.current = false;
+          }
+        }
+      }
+
       durationTimerRef.current = setInterval(() => {
         setRecordingDuration(d => d + 1);
       }, 1000);
     } catch (err) {
-      console.error('Microphone error:', err);
-      alert('Microphone access blocked. You can also select a sample case below to test immediately.');
+      console.error('Microphone access error:', err);
+      alert('Microphone error: ' + (err.message || 'Microphone access blocked. Please allow mic permissions in your browser.'));
     }
   };
 
   const stopRecording = () => {
-    if (!isRecording) return;
+    isRecordingRef.current = false;
     setIsRecording(false);
+    setIsVoiceDetected(false);
+    setSpeechEngineStatus('ready');
+
+    if (animFrameRef.current) {
+      cancelAnimationFrame(animFrameRef.current);
+      animFrameRef.current = null;
+    }
 
     if (durationTimerRef.current) {
       clearInterval(durationTimerRef.current);
@@ -141,8 +362,10 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
       mediaRecorderRef.current.stream.getTracks().forEach(t => t.stop());
     }
 
-    if (recognitionRef.current) {
-      try { recognitionRef.current.stop(); } catch (e) {}
+    if (recognitionRef.current && isRecognitionRunningRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
     }
   };
 
@@ -161,6 +384,7 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
     stopRecording();
     setSelectedPresetId(preset.id);
     setSelectedLanguage(preset.language);
+    finalTranscriptRef.current = preset.transcript;
     setTranscript(preset.transcript);
     setInterimTranscript('');
     setClientAudioMetrics({
@@ -172,10 +396,16 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
     setAudioBlob(null);
   };
 
+  const handleApplyQuickTemplate = (tplText) => {
+    finalTranscriptRef.current = tplText;
+    setTranscript(tplText);
+    setInterimTranscript('');
+  };
+
   const handleProceed = async () => {
     const fullText = (transcript + ' ' + interimTranscript).trim();
     if (!fullText && !audioBlob && !selectedPresetId) {
-      alert('Please speak your complaint or choose a test scenario.');
+      alert('Please speak your complaint, type details, or choose a test scenario.');
       return;
     }
 
@@ -184,7 +414,7 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
       const selectedPreset = demoScenarios.find(s => s.id === selectedPresetId);
       const formData = new FormData();
       if (audioBlob) formData.append('audio', audioBlob, 'complaint.webm');
-      formData.append('transcript', fullText || (selectedPreset ? selectedPreset.transcript : ''));
+      formData.append('transcript', fullText || (selectedPreset ? selectedPreset.transcript : 'Voice Statement Recorded'));
       formData.append('language', selectedLanguage);
       if (clientAudioMetrics) formData.append('clientAudioMetrics', JSON.stringify(clientAudioMetrics));
       if (selectedPreset) {
@@ -221,7 +451,7 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
   return (
     <div className="animate-fade-in" style={{ position: 'relative', maxWidth: '1000px', margin: '0 auto', minHeight: '620px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
       
-      {/* Top Controls: Mode Switcher (Voice / Chat) + Language Pill */}
+      {/* Top Controls: Mode Switcher (Voice / Chat) + Language Pill + Samples */}
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', gap: '10px', marginBottom: '16px' }}>
         
         {/* Mode Toggle: Voice vs Chat */}
@@ -269,31 +499,6 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
           </button>
         </div>
 
-        {/* Language Selector */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg-card)', padding: '5px 14px', borderRadius: '9999px', border: '1px solid var(--border-color)', fontSize: '0.78rem', color: 'var(--text-secondary)' }}>
-          <span>Language:</span>
-          <select
-            value={selectedLanguage}
-            onChange={(e) => setSelectedLanguage(e.target.value)}
-            disabled={isRecording}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-primary)',
-              fontWeight: '700',
-              cursor: 'pointer',
-              outline: 'none',
-              fontSize: '0.8rem'
-            }}
-          >
-            {SUPPORTED_LANGUAGES.map(l => (
-              <option key={l.code} value={l.code} style={{ background: 'var(--bg-card)', color: 'var(--text-primary)' }}>
-                {l.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
         {/* Demo Toggle */}
         <button
           onClick={() => setShowDemos(!showDemos)}
@@ -316,17 +521,53 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
         </button>
       </div>
 
-      {/* Main Hero Center Area matching Screenshot */}
-      <div style={{ textAlign: 'center', margin: '30px 0 40px 0', position: 'relative', zIndex: 1 }}>
+      {/* Main Hero Center Area */}
+      <div style={{ textAlign: 'center', margin: '16px 0 28px 0', position: 'relative', zIndex: 1 }}>
         
-        <h1 style={{ fontSize: '2.5rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '14px', letterSpacing: '-0.02em' }}>
+        <h1 style={{ fontSize: '2.4rem', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
           Namaste!
         </h1>
         
-        <p style={{ fontSize: '1.05rem', color: 'var(--text-secondary)', maxWidth: '440px', margin: '0 auto 36px auto', lineHeight: '1.5' }}>
-          Your voice matters. Share your complaint<br />
+        <p style={{ fontSize: '1.02rem', color: 'var(--text-secondary)', maxWidth: '480px', margin: '0 auto 16px auto', lineHeight: '1.5' }}>
+          Your voice matters. Share your complaint in your spoken language<br />
           and help us build a better tomorrow.
         </p>
+
+        {/* 1-Click Fast Language Selector Pills */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', marginRight: '4px' }}>
+            Spoken Language:
+          </span>
+          {SUPPORTED_LANGUAGES.map(l => {
+            const active = selectedLanguage === l.code;
+            return (
+              <button
+                key={l.code}
+                type="button"
+                onClick={() => handleLanguageChange(l.code)}
+                style={{
+                  background: active ? 'var(--accent-blue)' : 'var(--bg-card)',
+                  color: active ? '#ffffff' : 'var(--text-secondary)',
+                  border: `1px solid ${active ? 'var(--accent-blue)' : 'var(--border-color)'}`,
+                  borderRadius: '9999px',
+                  padding: '5px 13px',
+                  fontSize: '0.76rem',
+                  fontWeight: active ? '700' : '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  boxShadow: active ? '0 2px 8px rgba(76, 123, 244, 0.3)' : 'none'
+                }}
+                title={l.hint}
+              >
+                <span>{l.name}</span>
+                {active && <Check size={12} />}
+              </button>
+            );
+          })}
+        </div>
 
         {/* Central Circular Mic with Exact Concentric Halos */}
         <div className={`mic-halo-container ${isRecording ? 'recording-active' : ''}`}>
@@ -343,7 +584,7 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
         </div>
 
         {/* Sub-label matching screenshot */}
-        <div style={{ marginTop: '18px', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+        <div style={{ marginTop: '14px', fontSize: '0.9rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
           {isRecording ? (
             <span style={{ color: '#e11d48', fontWeight: '700' }}>
               ● Recording... ({formatSeconds(recordingDuration)}) — Tap to finish
@@ -353,9 +594,37 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
           )}
         </div>
 
+        {/* Real-time 60FPS Audio Waveform Equalizer Canvas (0ms Latency) */}
+        {isRecording && (
+          <div style={{ margin: '14px auto 0 auto', textAlign: 'center' }}>
+            <canvas
+              ref={canvasRef}
+              width={260}
+              height={36}
+              className="live-waveform-canvas"
+            />
+            <div style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '8px', 
+              fontSize: '0.76rem', 
+              marginTop: '4px',
+              color: isVoiceDetected ? 'var(--accent-blue)' : 'var(--text-muted)', 
+              fontWeight: '600' 
+            }}>
+              <Volume2 size={14} />
+              <span>
+                {isVoiceDetected 
+                  ? `Mic Active (${voiceRmsLevel}% Volume) • Voice detected live` 
+                  : 'Mic is hearing audio • Speak clearly into your microphone'}
+              </span>
+            </div>
+          </div>
+        )}
+
         {/* Live Audio Playback Bar if recorded */}
-        {audioUrl && (
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', padding: '8px 18px', borderRadius: '9999px', border: '1px solid var(--border-color)', marginTop: '20px' }}>
+        {audioUrl && !isRecording && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', background: 'var(--bg-card)', padding: '8px 18px', borderRadius: '9999px', border: '1px solid var(--border-color)', marginTop: '16px' }}>
             <button
               onClick={handleTogglePlay}
               style={{ background: 'none', border: 'none', color: 'var(--accent-blue)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
@@ -373,31 +642,196 @@ export default function VoiceRecorder({ onProceedToReview, onNavigateTab, demoSc
           </div>
         )}
 
-        {/* Live Speech-to-Text Transcript Box (if user has spoken or selected) */}
-        {(transcript || interimTranscript) && (
-          <div style={{ maxWidth: '620px', margin: '24px auto 0 auto', textAlign: 'left', background: 'var(--bg-card)', borderRadius: '14px', padding: '16px 20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-card)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-              <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>
-                Captured Voice Transcript
-              </span>
-              <span className="status-pill badge-moderate" style={{ fontSize: '0.68rem' }}>
-                AI Speech Recognized
+        {/* Instant Live Speech-to-Text Transcript Box (Immediately visible when recording starts) */}
+        {(isRecording || transcript || interimTranscript || audioUrl) && (
+          <div style={{ 
+            maxWidth: '680px', 
+            margin: '20px auto 0 auto', 
+            textAlign: 'left', 
+            background: 'var(--bg-card)', 
+            borderRadius: '16px', 
+            padding: '18px 22px', 
+            border: '1px solid var(--border-color)', 
+            boxShadow: 'var(--shadow-card)' 
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>
+                  Captured Voice Statement
+                </span>
+                {isRecording ? (
+                  <span className={`status-pill ${isVoiceDetected ? 'voice-status-live' : ''}`} style={{ 
+                    fontSize: '0.68rem', 
+                    background: isVoiceDetected ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                    color: isVoiceDetected ? '#10b981' : '#f59e0b',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isVoiceDetected ? '#10b981' : '#f59e0b' }} />
+                    {isVoiceDetected ? 'Transcribing Live Voice' : 'Listening for Voice...'}
+                  </span>
+                ) : (
+                  <span className="status-pill badge-moderate" style={{ fontSize: '0.68rem' }}>
+                    {transcript ? 'AI Speech Recognized' : 'Voice Audio Captured'}
+                  </span>
+                )}
+              </div>
+
+              {/* Right Controls: Edit Text & Clear */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingTranscript(!isEditingTranscript)}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: isEditingTranscript ? 'var(--accent-blue)' : 'var(--text-muted)',
+                    fontSize: '0.74rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <Edit3 size={12} />
+                  <span>{isEditingTranscript ? 'Done Editing' : 'Edit Text'}</span>
+                </button>
+                {(transcript || interimTranscript) && !isRecording && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTranscript('');
+                      setInterimTranscript('');
+                      finalTranscriptRef.current = '';
+                    }}
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      fontSize: '0.74rem',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                    title="Clear transcript"
+                  >
+                    <Trash2 size={12} />
+                    <span>Clear</span>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Network / Speech Engine Warning Notification if browser or cloud blocks speech */}
+            {speechEngineStatus === 'network-error' && (
+              <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', padding: '8px 12px', fontSize: '0.76rem', color: '#f87171', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <AlertCircle size={14} />
+                <span>
+                  Google Speech Cloud service is currently unreachable on your network. Your audio is still being recorded! You can also click a quick template below or type your statement.
+                </span>
+              </div>
+            )}
+
+            {/* Editable or Real-time Streaming Content */}
+            {isEditingTranscript ? (
+              <textarea
+                value={transcript}
+                onChange={(e) => {
+                  setTranscript(e.target.value);
+                  finalTranscriptRef.current = e.target.value;
+                }}
+                placeholder="Type or edit your grievance statement here..."
+                rows={3}
+                style={{
+                  width: '100%',
+                  background: 'var(--bg-card-subtle)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '10px',
+                  padding: '10px',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.92rem',
+                  lineHeight: '1.5',
+                  outline: 'none',
+                  resize: 'vertical',
+                  fontFamily: 'inherit'
+                }}
+              />
+            ) : (
+              <p style={{ fontSize: '0.94rem', color: 'var(--text-primary)', lineHeight: '1.6', margin: '6px 0 10px 0', minHeight: '26px' }}>
+                {!transcript && !interimTranscript && isRecording ? (
+                  <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    🎙️ Listening in {SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name}... Bolte hi aapke shabad yahan real-time me type honge.
+                  </span>
+                ) : (
+                  <>
+                    <span>{transcript}</span>
+                    {interimTranscript && (
+                      <span style={{ color: 'var(--accent-blue)', fontWeight: '600' }}>
+                        {' ' + interimTranscript}
+                      </span>
+                    )}
+                    {isRecording && <span className="blinking-cursor" />}
+                    {!transcript && !interimTranscript && !isRecording && (
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        Voice statement recorded. Click "Proceed to Docket Review" or select a common template below.
+                      </span>
+                    )}
+                  </>
+                )}
+              </p>
+            )}
+
+            {/* Quick 1-Click Complaint Statement Templates */}
+            <div style={{ marginTop: '12px', borderTop: '1px dashed var(--border-color)', paddingTop: '10px' }}>
+              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '700', marginBottom: '6px' }}>
+                Quick Complaint Fill (1-Click):
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {QUICK_VOICE_TEMPLATES.map((tpl, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleApplyQuickTemplate(tpl.text)}
+                    style={{
+                      background: 'var(--bg-surface)',
+                      border: '1px solid var(--border-color)',
+                      borderRadius: '9999px',
+                      padding: '4px 10px',
+                      fontSize: '0.72rem',
+                      color: 'var(--text-secondary)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--accent-blue)'; e.currentTarget.style.color = 'var(--accent-blue)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border-color)'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                  >
+                    + {tpl.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Helper Guidance Tip */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '12px' }}>
+              <AlertCircle size={12} />
+              <span>
+                Language: <strong>{SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name}</strong>. English ya mixed Hinglish bolne ke liye upar "English" pill dabayein.
               </span>
             </div>
-            <p style={{ fontSize: '0.92rem', color: 'var(--text-primary)', lineHeight: '1.5' }}>
-              {transcript}
-              {interimTranscript && <span style={{ color: 'var(--accent-blue)', opacity: 0.8 }}> {interimTranscript}</span>}
-            </p>
 
+            {/* Proceed to Docket Review Button */}
             <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
               <button
                 id="review-voice-btn"
                 onClick={handleProceed}
                 className="btn-primary"
-                disabled={isProcessing}
-                style={{ padding: '8px 20px', fontSize: '0.86rem' }}
+                disabled={isProcessing || (!transcript.trim() && !interimTranscript.trim() && !audioBlob && !selectedPresetId)}
+                style={{ padding: '8px 22px', fontSize: '0.86rem' }}
               >
-                {isProcessing ? 'Analyzing Trauma...' : 'Proceed to Docket Review →'}
+                {isProcessing ? 'Analyzing Trauma Signals...' : 'Proceed to Docket Review →'}
               </button>
             </div>
           </div>

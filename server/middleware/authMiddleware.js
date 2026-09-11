@@ -23,18 +23,40 @@ function hashPassword(password) {
  * In-memory officials store.
  * In production, this would be a Firestore collection or database table.
  */
-const officials = [];
-
-// Seed default official account
-const defaultOfficial = {
-  id: 'official-001',
-  email: 'admin@nhaa.gov.in',
-  name: 'District Nodal Officer',
-  passwordHash: hashPassword('NhaaAdmin@2026'),
-  role: 'official',
-  createdAt: new Date().toISOString()
-};
-officials.push(defaultOfficial);
+const officials = [
+  {
+    id: 'official-admin-001',
+    email: 'admin@nhaa.gov.in',
+    name: 'District Nodal Officer (Admin)',
+    passwordHash: hashPassword('NhaaAdmin@2026'),
+    role: 'admin',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'official-sup-002',
+    email: 'supervisor@nhaa.gov.in',
+    name: 'Zonal Supervisor Rao',
+    passwordHash: hashPassword('Supervisor@2026'),
+    role: 'supervisor',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'official-off-003',
+    email: 'officer.rao@nhaa.gov.in',
+    name: 'Inspector Rajeshwar Rao',
+    passwordHash: hashPassword('Officer@2026'),
+    role: 'officer',
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'official-off-004',
+    email: 'officer.kadam@nhaa.gov.in',
+    name: 'Sub-Inspector Anjali Kadam',
+    passwordHash: hashPassword('Officer@2026'),
+    role: 'officer',
+    createdAt: new Date().toISOString()
+  }
+];
 
 /**
  * Validate credentials and return official record (without passwordHash).
@@ -61,7 +83,7 @@ export function generateToken(official) {
     {
       id: official.id,
       email: official.email,
-      role: 'official',
+      role: official.role || 'officer',
       name: official.name
     },
     JWT_SECRET,
@@ -70,10 +92,49 @@ export function generateToken(official) {
 }
 
 /**
+ * Check if an official role has supervisor or admin privileges
+ */
+export function isSupervisorOrAdmin(role) {
+  const normalized = (role || '').toLowerCase();
+  return normalized === 'admin' || normalized === 'supervisor';
+}
+
+/**
+ * Role-Based Access Control check for Complaint Audit Logs:
+ * - Only Supervisor/Admin role can view audit logs across all officers
+ * - Regular officers see only the log for cases they're currently assigned to
+ */
+export function canAccessAuditLog(official, complaint) {
+  if (!official || !complaint) return false;
+  const role = (official.role || '').toLowerCase();
+
+  // Supervisor or Admin can view audit logs across all officers
+  if (role === 'admin' || role === 'supervisor') {
+    return true;
+  }
+
+  // Regular officers see only the log for cases they're currently assigned to
+  if (complaint.assignedOfficerId && complaint.assignedOfficerId === official.id) {
+    return true;
+  }
+
+  if (complaint.assignedOfficer && official.name) {
+    // Check if officer name is part of assignedOfficer string (e.g. "Inspector Rajeshwar Rao (Atrocity Cell, Zone 4)")
+    const assignedLower = complaint.assignedOfficer.toLowerCase();
+    const nameLower = official.name.toLowerCase();
+    if (assignedLower.includes(nameLower) || nameLower.includes(assignedLower)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Express middleware: requireOfficialAuth
  * - Extracts Bearer token from Authorization header
  * - Verifies JWT signature and expiry
- * - Checks role === 'official'
+ * - Checks role is valid official role ('admin', 'supervisor', 'officer', 'official')
  * - Attaches req.official on success
  * - Returns 401/403 on failure
  */
@@ -91,8 +152,9 @@ export function requireOfficialAuth(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    const allowedRoles = ['admin', 'supervisor', 'officer', 'official'];
 
-    if (decoded.role !== 'official') {
+    if (!decoded.role || !allowedRoles.includes(decoded.role.toLowerCase())) {
       return res.status(403).json({
         success: false,
         error: 'Access denied. Official authorization required.'
@@ -123,3 +185,4 @@ export function requireOfficialAuth(req, res, next) {
 }
 
 export { officials };
+

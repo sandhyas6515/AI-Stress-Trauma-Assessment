@@ -4,6 +4,8 @@
  * for national portal grievance triage and demonstration.
  */
 
+import { db, firestoreAuditService } from './firestore.js';
+
 let complaints = [
   {
     ticketId: "NHAA-2026-849201",
@@ -13,6 +15,7 @@ let complaints = [
     languageName: "Hindi (हिंदी)",
     status: "Action Assigned",
     assignedOfficer: "Inspector Rajeshwar Rao (Atrocity Cell, Zone 4)",
+    assignedOfficerId: "official-off-003",
     victim: {
       name: "Sunita Devi",
       maskedName: "S***** D***",
@@ -122,6 +125,7 @@ let complaints = [
     languageName: "Marathi (मराठी)",
     status: "Under Review",
     assignedOfficer: "Sub-Inspector Anjali Kadam (Atrocity Cell)",
+    assignedOfficerId: "official-off-004",
     victim: {
       name: "Tukaram Shinde",
       maskedName: "T******* S*****",
@@ -214,6 +218,7 @@ let complaints = [
     languageName: "English",
     status: "In Progress",
     assignedOfficer: "Nodal Officer Vikram Malhotra",
+    assignedOfficerId: "official-off-005",
     victim: {
       name: "Pooja Kannan",
       maskedName: "P**** K*****",
@@ -310,6 +315,7 @@ let complaints = [
     languageName: "English",
     status: "Resolved",
     assignedOfficer: "Grievance Officer Meena Nair",
+    assignedOfficerId: "official-off-006",
     victim: {
       name: "Arun Kumar",
       maskedName: "A*** K****",
@@ -464,7 +470,8 @@ export const complaintsStore = {
       language: data.language || 'en',
       languageName: data.languageName || 'English',
       status: 'Submitted',
-      assignedOfficer: 'Auto-Queued for Nodal Allocation',
+      assignedOfficer: data.assignedOfficer || 'Auto-Queued for Nodal Allocation',
+      assignedOfficerId: data.assignedOfficerId || null,
       victim: {
         name: data.victim?.name || 'Anonymous Complainant',
         maskedName: data.victim?.name ? `${data.victim.name.charAt(0)}***` : 'A********',
@@ -578,5 +585,153 @@ export const complaintsStore = {
       criticalEscalationRate: "100%",
       activeEmergencyDispatches: complaints.filter(c => c.riskAssessment.riskLevel === 'Critical' && c.status !== 'Resolved').length
     };
+  },
+
+  /**
+   * Retrieve audit log entries from complaints/{ticketId}/auditLog/
+   */
+  getAuditLogs: async (ticketId) => {
+    return await firestoreAuditService.getAuditLogs(ticketId);
+  },
+
+  /**
+   * Write an audit log entry to complaints/{ticketId}/auditLog/
+   */
+  addAuditLog: async (ticketId, entry) => {
+    return await firestoreAuditService.writeAuditLog(ticketId, entry);
   }
 };
+
+// Seed realistic Firestore audit logs subcollections for initial complaints
+firestoreAuditService.seedAuditLogs("NHAA-2026-849201", [
+  {
+    officerId: "official-off-003",
+    officerName: "Inspector Rajeshwar Rao",
+    action: "NOTE_ADDED",
+    previousValue: null,
+    newValue: "Case docket verified on ground. 108 Emergency Ambulance coordinated; PCR unit in position.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString()
+  },
+  {
+    officerId: "official-off-003",
+    officerName: "Inspector Rajeshwar Rao",
+    action: "STATUS_CHANGE",
+    previousValue: "Submitted",
+    newValue: "Action Assigned",
+    timestamp: new Date(Date.now() - 1000 * 60 * 8).toISOString()
+  },
+  {
+    officerId: "official-admin-001",
+    officerName: "District Nodal Officer (Admin)",
+    action: "ASSIGNMENT",
+    previousValue: "Auto-Queued for Nodal Allocation",
+    newValue: "Inspector Rajeshwar Rao (Atrocity Cell, Zone 4)",
+    timestamp: new Date(Date.now() - 1000 * 60 * 8).toISOString()
+  },
+  {
+    officerId: "official-admin-001",
+    officerName: "District Nodal Officer (Admin)",
+    action: "ESCALATION",
+    previousValue: "Pending Rapid Dispatch",
+    newValue: "Emergency Dispatch Activated: PCR Van 14 dispatched from Mirzapur Sadar Police Station",
+    timestamp: new Date(Date.now() - 1000 * 60 * 12).toISOString()
+  },
+  {
+    officerId: "system-triage",
+    officerName: "System Auto-Triage",
+    action: "COMPLAINT_CREATED",
+    previousValue: null,
+    newValue: "Grievance lodged via Voice Capture Module. Fused Trauma Score: 94/100 (Critical Red Alert).",
+    timestamp: new Date(Date.now() - 1000 * 60 * 18).toISOString()
+  }
+]);
+
+firestoreAuditService.seedAuditLogs("NHAA-2026-673194", [
+  {
+    officerId: "official-off-004",
+    officerName: "Sub-Inspector Anjali Kadam",
+    action: "NOTE_ADDED",
+    previousValue: null,
+    newValue: "Preliminary facts verification initiated with Gram Panchayat Wadgaon Shinde.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 50).toISOString()
+  },
+  {
+    officerId: "official-off-004",
+    officerName: "Sub-Inspector Anjali Kadam",
+    action: "STATUS_CHANGE",
+    previousValue: "Submitted",
+    newValue: "Under Review",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString()
+  },
+  {
+    officerId: "official-sup-002",
+    officerName: "Zonal Supervisor Rao",
+    action: "ASSIGNMENT",
+    previousValue: "Auto-Queued for Nodal Allocation",
+    newValue: "Sub-Inspector Anjali Kadam (Atrocity Cell)",
+    timestamp: new Date(Date.now() - 1000 * 60 * 70).toISOString()
+  },
+  {
+    officerId: "system-triage",
+    officerName: "System Auto-Triage",
+    action: "COMPLAINT_CREATED",
+    previousValue: null,
+    newValue: "Grievance registered. Fused Trauma Score: 68/100 (High Risk - Caste Discrimination).",
+    timestamp: new Date(Date.now() - 1000 * 60 * 85).toISOString()
+  }
+]);
+
+firestoreAuditService.seedAuditLogs("NHAA-2026-451892", [
+  {
+    officerId: "official-off-005",
+    officerName: "Nodal Officer Vikram Malhotra",
+    action: "NOTE_ADDED",
+    previousValue: null,
+    newValue: "Notice drafted for local SHO and SDM civil dispute desk.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString()
+  },
+  {
+    officerId: "official-off-005",
+    officerName: "Nodal Officer Vikram Malhotra",
+    action: "STATUS_CHANGE",
+    previousValue: "Under Review",
+    newValue: "In Progress",
+    timestamp: new Date(Date.now() - 1000 * 60 * 180).toISOString()
+  },
+  {
+    officerId: "system-triage",
+    officerName: "System Auto-Triage",
+    action: "COMPLAINT_CREATED",
+    previousValue: null,
+    newValue: "Grievance registered. Fused Trauma Score: 45/100 (Moderate Risk).",
+    timestamp: new Date(Date.now() - 1000 * 60 * 240).toISOString()
+  }
+]);
+
+firestoreAuditService.seedAuditLogs("NHAA-2026-192834", [
+  {
+    officerId: "official-off-006",
+    officerName: "Grievance Officer Meena Nair",
+    action: "STATUS_CHANGE",
+    previousValue: "In Progress",
+    newValue: "Resolved",
+    timestamp: new Date(Date.now() - 1000 * 60 * 300).toISOString()
+  },
+  {
+    officerId: "official-off-006",
+    officerName: "Grievance Officer Meena Nair",
+    action: "NOTE_ADDED",
+    previousValue: null,
+    newValue: "Certificate expedited and handed over to complainant. Grievance successfully closed.",
+    timestamp: new Date(Date.now() - 1000 * 60 * 310).toISOString()
+  },
+  {
+    officerId: "system-triage",
+    officerName: "System Auto-Triage",
+    action: "COMPLAINT_CREATED",
+    previousValue: null,
+    newValue: "Grievance registered. Fused Trauma Score: 20/100 (Low Risk).",
+    timestamp: new Date(Date.now() - 1000 * 60 * 600).toISOString()
+  }
+]);
+

@@ -344,7 +344,7 @@ export default function App() {
 
         {activeTab === 'official' && (
           isAuthenticated ? (
-            <OfficialDashboard token={token} onAuthError={logout} />
+            <OfficialDashboard token={token} officialUser={officialUser} onAuthError={logout} />
           ) : (
             <OfficialLogin onLoginSuccess={login} />
           )

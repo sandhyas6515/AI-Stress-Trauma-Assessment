@@ -121,6 +121,80 @@ export default function OfficialLogin({ onLoginSuccess }) {
           </div>
         )}
 
+        {/* Quick Role Selection for Audit Log Verification */}
+        <div style={{ marginBottom: '22px' }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '8px'
+          }}>
+            <span style={{
+              fontSize: '0.72rem',
+              fontWeight: '700',
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.04em'
+            }}>
+              Quick Fill Demo Credentials by Role
+            </span>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '8px'
+          }}>
+            {[
+              { label: 'Admin', role: 'admin', badge: 'All Logs', email: 'admin@nhaa.gov.in', pass: 'NhaaAdmin@2026', color: '#60a5fa' },
+              { label: 'Supervisor', role: 'supervisor', badge: 'All Logs', email: 'supervisor@nhaa.gov.in', pass: 'Supervisor@2026', color: '#a78bfa' },
+              { label: 'Officer Rao', role: 'officer', badge: 'Case #1 Only', email: 'officer.rao@nhaa.gov.in', pass: 'Officer@2026', color: '#34d399' },
+              { label: 'Officer Kadam', role: 'officer', badge: 'Case #2 Only', email: 'officer.kadam@nhaa.gov.in', pass: 'Officer@2026', color: '#fbbf24' }
+            ].map((acc) => {
+              const isSelected = email === acc.email;
+              return (
+                <button
+                  key={acc.email}
+                  type="button"
+                  onClick={() => {
+                    setEmail(acc.email);
+                    setPassword(acc.pass);
+                    setError(null);
+                  }}
+                  style={{
+                    background: isSelected ? 'var(--accent-blue-subtle)' : 'var(--bg-surface-subtle)',
+                    border: isSelected ? '1px solid var(--accent-blue)' : '1px solid var(--border-glass)',
+                    borderRadius: '8px',
+                    padding: '8px 10px',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.78rem', fontWeight: '800', color: acc.color }}>
+                      {acc.label}
+                    </span>
+                    <span style={{
+                      fontSize: '0.64rem',
+                      fontWeight: '700',
+                      padding: '1px 5px',
+                      borderRadius: '4px',
+                      background: 'rgba(255, 255, 255, 0.06)',
+                      color: 'var(--text-muted)'
+                    }}>
+                      {acc.badge}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {acc.email}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Login Form */}
         <form onSubmit={handleSubmit}>
           {/* Email Field */}
