@@ -35,19 +35,19 @@ export default function LandmarkSilhouette({ theme = 'dark' }) {
 
         {/* Left Monument (India Gate / Secretariat style) */}
         <path d="M 120 152 L 120 90 Q 155 70 190 90 L 190 152 Z" />
-        <rect x="145" y="105" width="20" height="47" rx="10" fill={isDark ? '#0c1322' : '#f8fafc'} />
+        <rect x="145" y="105" width="20" height="47" rx="10" fill={isDark ? '#000000' : '#f8fafc'} />
         <rect x="100" y="115" width="110" height="6" />
 
         {/* Central Left Parliament Colonnade */}
         <rect x="230" y="110" width="160" height="42" />
         {/* Pillars */}
-        <line x1="245" y1="115" x2="245" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="265" y1="115" x2="265" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="285" y1="115" x2="285" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="305" y1="115" x2="305" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="325" y1="115" x2="325" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="345" y1="115" x2="345" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="365" y1="115" x2="365" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
+        <line x1="245" y1="115" x2="245" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="265" y1="115" x2="265" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="285" y1="115" x2="285" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="305" y1="115" x2="305" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="325" y1="115" x2="325" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="345" y1="115" x2="345" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="365" y1="115" x2="365" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
 
         {/* Small Dome Left */}
         <path d="M 290 110 Q 310 85 330 110 Z" />
@@ -63,29 +63,29 @@ export default function LandmarkSilhouette({ theme = 'dark' }) {
         <circle cx="600" cy="14" r="3" />
 
         {/* Center Pillars */}
-        <line x1="565" y1="80" x2="565" y2="112" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="3" />
-        <line x1="580" y1="80" x2="580" y2="112" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="3" />
-        <line x1="600" y1="80" x2="600" y2="112" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="3" />
-        <line x1="620" y1="80" x2="620" y2="112" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="3" />
-        <line x1="635" y1="80" x2="635" y2="112" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="3" />
+        <line x1="565" y1="80" x2="565" y2="112" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="3" />
+        <line x1="580" y1="80" x2="580" y2="112" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="3" />
+        <line x1="600" y1="80" x2="600" y2="112" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="3" />
+        <line x1="620" y1="80" x2="620" y2="112" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="3" />
+        <line x1="635" y1="80" x2="635" y2="112" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="3" />
 
         {/* Central Right Parliament Colonnade */}
         <rect x="800" y="105" width="180" height="47" />
         {/* Pillars */}
-        <line x1="820" y1="110" x2="820" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="840" y1="110" x2="840" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="860" y1="110" x2="860" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="880" y1="110" x2="880" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="900" y1="110" x2="900" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="920" y1="110" x2="920" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
-        <line x1="940" y1="110" x2="940" y2="152" stroke={isDark ? '#0c1322' : '#f8fafc'} strokeWidth="4" />
+        <line x1="820" y1="110" x2="820" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="840" y1="110" x2="840" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="860" y1="110" x2="860" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="880" y1="110" x2="880" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="900" y1="110" x2="900" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="920" y1="110" x2="920" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
+        <line x1="940" y1="110" x2="940" y2="152" stroke={isDark ? '#000000' : '#f8fafc'} strokeWidth="4" />
 
         {/* Right Dome */}
         <path d="M 870 105 Q 890 80 910 105 Z" />
 
         {/* Right Monument */}
         <path d="M 1020 152 L 1020 95 Q 1050 75 1080 95 L 1080 152 Z" />
-        <rect x="1040" y="110" width="20" height="42" rx="10" fill={isDark ? '#0c1322' : '#f8fafc'} />
+        <rect x="1040" y="110" width="20" height="42" rx="10" fill={isDark ? '#000000' : '#f8fafc'} />
       </svg>
     </div>
   );

@@ -1,17 +1,17 @@
-/* Exact design system matching user reference screenshot */
+/* Pitch Black OLED Dark Theme & Light Theme design tokens */
 :root {
-  /* Default: Dark Theme (Right side of screenshot) */
-  --bg-main: #0c1322;
-  --bg-card: #131c2e;
-  --bg-card-subtle: #172238;
-  --bg-surface: #0f182a;
-  --bg-input: #10192a;
-  --border-color: rgba(255, 255, 255, 0.08);
-  --border-hover: rgba(76, 123, 244, 0.4);
+  /* Default: True Pitch Black OLED Theme */
+  --bg-main: #000000;
+  --bg-card: #0a0a0a;
+  --bg-card-subtle: #121212;
+  --bg-surface: #0a0a0a;
+  --bg-input: #121212;
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(76, 123, 244, 0.5);
 
   --text-primary: #ffffff;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
 
   --accent-blue: #4c7bf4;
   --accent-blue-hover: #3b68e5;
@@ -19,7 +19,7 @@
   --accent-halo: rgba(76, 123, 244, 0.22);
   --accent-halo-outer: rgba(76, 123, 244, 0.08);
 
-  --silhouette-color: #131d2e;
+  --silhouette-color: #0d0d0d;
 
   /* Risk Severity Accents */
   --risk-critical-bg: rgba(239, 68, 68, 0.16);
@@ -38,7 +38,7 @@
   --risk-low-border: rgba(16, 185, 129, 0.45);
   --risk-low-text: #34d399;
 
-  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.08);
   --shadow-mic: 0 10px 40px rgba(76, 123, 244, 0.35);
 }
 
